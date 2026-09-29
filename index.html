@@ -14,6 +14,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="firebase-config.js"></script>
 <style id="app-style">
 :root{
   --paper:#F5F7FA; --card:#FFFFFF; --ink:#1B2838; --muted:#667385; --line:#DCE2EA;
@@ -159,6 +160,17 @@ label.f .amt-row input{flex:1 1 auto;width:auto;min-width:0}
 .seg{display:flex;gap:8px;margin:0 0 12px}
 .seg .chip{padding:5px 14px}
 .seg .chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.cloud-card{padding:16px}
+.cloud-card form{display:grid;gap:10px}
+.cloud-card input{border:1.5px solid var(--line);border-radius:10px;padding:12px;background:var(--paper);color:var(--ink);font-size:16px;width:100%;min-width:0;min-height:46px}
+.cloud-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.cloud-who{font-size:14px;color:var(--muted);overflow-wrap:anywhere}
+.cloud-msg{font-size:14px;margin-top:10px;color:var(--ink);overflow-wrap:anywhere}
+.members{list-style:none;margin:8px 0 0;padding:0;font-size:14px}
+.members li{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:6px 0;border-top:1px solid var(--line);overflow-wrap:anywhere}
+.members li:first-child{border-top:0}
+.trip-pick{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.trip-pick:first-child{border-top:0}
 @media (max-width:400px){
   .wrap{padding:14px 12px 48px}
   form.exp-form{padding:14px}
@@ -217,9 +229,10 @@ label.f .amt-row input{flex:1 1 auto;width:auto;min-width:0}
   const origTxt = e => fmtIn(Math.round(e.amount*100), e.cur);
   const toCents = v => Math.round(parseFloat(String(v).replace(/,/g,'')) * 100);
 
-  function persist(){
+  function saveLocal(){
     try{ localStorage.setItem(STORE_KEY, JSON.stringify(state)); saveFailed = false; }catch(e){ saveFailed = true; }
   }
+  function persist(){ saveLocal(); cloudSave(); }
 
   // Split an expense in cents; leftover cents go to the first people in the list.
   function shares(exp){
@@ -427,6 +440,11 @@ label.f .amt-row input{flex:1 1 auto;width:auto;min-width:0}
         <p class="note" id="exportMsg" role="status"></p>
       </section>
 
+      <section>
+        <h2>Sync with your group</h2>
+        ${cloudHtml()}
+      </section>
+
       <div class="foot">
         <button class="btn ghost small" data-act="backup">Backup</button>
         <button class="btn ghost small" data-act="restore">Restore</button>
@@ -442,6 +460,7 @@ label.f .amt-row input{flex:1 1 auto;width:auto;min-width:0}
     const t = e.target;
     if(t.dataset.ff){ form[t.dataset.ff] = t.value; if(t.dataset.ff==='amount'){ const each=app.querySelector('.each'); if(each) each.textContent = eachText(); } }
     if(t.dataset.rate){ const v = parseFloat(t.value); if(v>0){ state.rates[t.dataset.rate] = v; persist(); refreshKeepFocus(t); } }
+    if(t.dataset.cf){ cloud[t.dataset.cf] = t.value; }
     if(t.dataset.f==='name'){ state.name = t.value; persist(); document.title = t.value || 'Trip Split'; updateSaveBar(); }
   });
   app.addEventListener('change', e => {
@@ -499,6 +518,8 @@ label.f .amt-row input{flex:1 1 auto;width:auto;min-width:0}
       persist(); render();
       const inp = app.querySelector('.add-person input'); if(inp) inp.focus();
     }
+    if(f==='auth'){ doAuth(); return; }
+    if(f==='share'){ cloudShare(e.target.m.value); return; }
     if(f==='expense'){
       const amt = toCents(form.amount);
       let cat = form.cat==='__new' ? (form.catNew||'').trim() : form.cat;
@@ -536,9 +557,11 @@ label.f .amt-row input{flex:1 1 auto;width:auto;min-width:0}
     else if(act==='row'){ openRows.has(p)?openRows.delete(p):openRows.add(p); render(); }
     else if(act==='clear'){
       if(!confirm('Remove all travelers and expenses and start over?')) return;
+      unsubTrip();
       state = {name:'New trip', currency:state.currency, rates:state.rates, view:state.view, people:[], expenses:[]};
       editingId=null; form=blankForm(); openRows.clear(); persist(); render();
     }
+    else if(act.startsWith('c-')) cloudAct(act, t);
     else if(act==='share') shareSummary();
     else if(act==='xlsx') exportXlsx();
     else if(act==='tsv') copyForSheets();
@@ -597,7 +620,7 @@ label.f .amt-row input{flex:1 1 auto;width:auto;min-width:0}
     note(await copyText(text) ? 'Summary copied. Paste it into your group chat.' : 'Could not copy. Select the balances and copy them by hand.', 'exportMsg');
   }
   function backup(){
-    saveFile(new Blob([JSON.stringify(state, null, 2)], {type:'application/json'}), fileBase()+'-backup.json', 'footMsg');
+    saveFile(new Blob([JSON.stringify(state, (k,v)=>k==='cloudId'?undefined:v, 2)], {type:'application/json'}), fileBase()+'-backup.json', 'footMsg');
   }
 
   // ---- Google Sheets: tab-separated text pastes straight into a sheet
@@ -723,14 +746,199 @@ label.f .amt-row input{flex:1 1 auto;width:auto;min-width:0}
       let x = null; try{ x = normalize(JSON.parse(r.result)); }catch(e){}
       if(!x){ note('That file is not a Trip Split backup.'); return; }
       if(!confirm('Replace what is on this phone with "'+x.name+'" ('+x.expenses.length+' expenses)?')){ input.value=''; return; }
-      state = x; editingId = null; form = blankForm(); openRows.clear(); persist(); render(); note('Backup restored.');
+      unsubTrip(); delete x.cloudId; state = x; editingId = null; form = blankForm(); openRows.clear(); persist(); render(); note('Backup restored. It is not linked to the cloud; use Sync to save it there.');
     };
     r.onerror = () => note('Could not read that file.');
     r.readAsText(f);
   }
 
+
+  // ---- Cloud sync (Firebase). Optional: the app works fully without it.
+  const cloud = {status:'off', user:null, db:null, auth:null, trips:[], msg:'', mode:'signin', email:'', pass:'', busy:false, members:[], owner:'', ownerEmail:''};
+  let tripUnsub = null, listUnsub = null, saveTimer = null, lastJson = '', fb = null;
+  const cfgOk = () => !!(window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.apiKey);
+  const stateJson = () => JSON.stringify(state, (k,v) => k==='cloudId' ? undefined : v);
+  const cloudReady = () => cloud.status==='ready' && cloud.user && cloud.user.emailVerified;
+  // Cloud-driven redraws wait while someone is typing so focus is not lost.
+  function renderSafe(){
+    const a = document.activeElement;
+    if(a && app.contains(a) && a.matches('input,select,textarea')){ setTimeout(renderSafe, 800); return; }
+    render();
+  }
+  function loadScript(src){ return new Promise((res,rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = () => rej(new Error('load failed')); document.head.appendChild(s); }); }
+  async function cloudInit(){
+    if(!cfgOk()){ cloud.status = 'off'; return; }
+    cloud.status = 'loading';
+    try{
+      const base = 'https://www.gstatic.com/firebasejs/10.14.1/';
+      await loadScript(base+'firebase-app-compat.js');
+      await Promise.all([loadScript(base+'firebase-auth-compat.js'), loadScript(base+'firebase-firestore-compat.js')]);
+      fb = window.firebase; fb.initializeApp(window.FIREBASE_CONFIG);
+      cloud.auth = fb.auth(); cloud.db = fb.firestore();
+      try{ cloud.db.enablePersistence({synchronizeTabs:true}).catch(()=>{}); }catch(e){}
+      cloud.status = 'ready';
+      cloud.auth.onAuthStateChanged(onUser);
+    }catch(e){ cloud.status = 'offline'; }
+    renderSafe();
+  }
+  function onUser(u){
+    cloud.user = u;
+    if(listUnsub){ listUnsub(); listUnsub = null; } cloud.trips = [];
+    if(u && u.emailVerified){
+      listUnsub = cloud.db.collection('trips').where('members','array-contains',u.email.toLowerCase()).onSnapshot(
+        s => { cloud.trips = s.docs.map(d => ({id:d.id, name:d.data().name || 'Untitled trip'})); renderSafe(); },
+        e => { cloud.msg = 'Could not load your trips: '+e.message; renderSafe(); });
+      if(state.cloudId) subscribeTrip();
+    } else unsubTrip();
+    renderSafe();
+  }
+  function unsubTrip(){ if(tripUnsub){ tripUnsub(); tripUnsub = null; } }
+  function subscribeTrip(){
+    unsubTrip(); if(!state.cloudId || !cloudReady()) return;
+    const id = state.cloudId;
+    tripUnsub = cloud.db.collection('trips').doc(id).onSnapshot(snap => {
+      if(state.cloudId !== id) return;
+      if(!snap.exists){
+        cloud.msg = 'That cloud trip was deleted. It is still saved on this phone.';
+        delete state.cloudId; saveLocal(); unsubTrip(); renderSafe(); return;
+      }
+      const d = snap.data();
+      cloud.members = d.members || []; cloud.owner = d.owner || ''; cloud.ownerEmail = d.ownerEmail || '';
+      if(!snap.metadata.hasPendingWrites && d.state && d.state !== lastJson){
+        let x = null; try{ x = normalize(JSON.parse(d.state)); }catch(e){}
+        if(x){
+          x.cloudId = id; state = x; lastJson = d.state;
+          if(editingId && !state.expenses.some(z=>z.id===editingId)) editingId = null;
+          if(!state.people.includes(form.payer)) form.payer = state.people[0] || '';
+          form.split = form.split.filter(p => state.people.includes(p));
+          saveLocal();
+        }
+      }
+      renderSafe();
+    }, e => { cloud.msg = 'Sync error: '+e.message; renderSafe(); });
+  }
+  function cloudSave(){
+    if(!state.cloudId || !cloudReady()) return;
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => {
+      const json = stateJson(); if(json === lastJson) return;
+      lastJson = json;
+      cloud.db.collection('trips').doc(state.cloudId).update({state:json, name:state.name, updatedAt:fb.firestore.FieldValue.serverTimestamp()})
+        .catch(e => { lastJson = ''; cloud.msg = 'Could not sync: '+e.message; renderSafe(); });
+    }, 700);
+  }
+  const authMsg = e => ({
+    'auth/invalid-credential':'Wrong email or password.', 'auth/wrong-password':'Wrong email or password.', 'auth/user-not-found':'Wrong email or password.',
+    'auth/email-already-in-use':'That email already has an account. Tap "Sign in" instead.', 'auth/weak-password':'Use a password of at least 6 characters.',
+    'auth/invalid-email':'That email address does not look right.', 'auth/too-many-requests':'Too many tries. Wait a few minutes and try again.',
+    'auth/network-request-failed':'No internet connection.', 'auth/operation-not-allowed':'Email sign-in is not turned on in Firebase yet.'
+  })[e && e.code] || (e && e.message) || 'Something went wrong.';
+  async function doAuth(){
+    const email = cloud.email.trim(), pass = cloud.pass;
+    if(!email || !pass){ cloud.msg = 'Enter your email and password.'; render(); return; }
+    cloud.busy = true; cloud.msg = ''; render();
+    try{
+      if(cloud.mode === 'signup'){
+        const c = await cloud.auth.createUserWithEmailAndPassword(email, pass);
+        await c.user.sendEmailVerification();
+        cloud.msg = 'Account created. We sent a verification email to '+email+'. Open the link in it, then come back and tap "I verified my email".';
+      } else await cloud.auth.signInWithEmailAndPassword(email, pass);
+      cloud.pass = '';
+    }catch(e){ cloud.msg = authMsg(e); }
+    cloud.busy = false; render();
+  }
+  async function cloudUpload(){
+    try{
+      const email = cloud.user.email.toLowerCase(), ref = cloud.db.collection('trips').doc(), json = stateJson();
+      await ref.set({owner:cloud.user.uid, ownerEmail:email, members:[email], name:state.name, state:json, updatedAt:fb.firestore.FieldValue.serverTimestamp()});
+      lastJson = json; state.cloudId = ref.id; saveLocal(); subscribeTrip();
+      cloud.msg = 'Saved to the cloud. Add your friends\' emails below to share it.';
+    }catch(e){ cloud.msg = 'Could not save to the cloud: '+e.message; }
+    render();
+  }
+  async function cloudOpen(id){
+    try{
+      const snap = await cloud.db.collection('trips').doc(id).get();
+      if(!snap.exists) throw new Error('Trip not found.');
+      const d = snap.data(); let x = null; try{ x = normalize(JSON.parse(d.state)); }catch(e){}
+      if(!x) throw new Error('That trip\'s data is unreadable.');
+      if(!state.cloudId && (state.people.length || state.expenses.length) && !confirm('Replace what is on this phone with "'+x.name+'"? Tap Backup first if you want to keep the current one.')) return;
+      x.cloudId = id; state = x; lastJson = d.state; editingId = null; form = blankForm(); openRows.clear();
+      saveLocal(); subscribeTrip(); cloud.msg = '';
+    }catch(e){ cloud.msg = e.message; }
+    render();
+  }
+  async function cloudShare(raw){
+    const email = raw.trim().toLowerCase();
+    if(!/^\S+@\S+\.\S+$/.test(email)){ cloud.msg = 'Enter a valid email address.'; render(); return; }
+    try{ await cloud.db.collection('trips').doc(state.cloudId).update({members:fb.firestore.FieldValue.arrayUnion(email)}); cloud.msg = email+' can now open this trip after signing in with that email.'; }
+    catch(e){ cloud.msg = 'Could not add them: '+e.message; }
+    render();
+  }
+  async function cloudAct(act, t){
+    if(act==='c-mode'){ cloud.mode = cloud.mode==='signin' ? 'signup' : 'signin'; cloud.msg = ''; render(); }
+    else if(act==='c-reset'){
+      const email = cloud.email.trim(); if(!email){ cloud.msg = 'Type your email above first.'; render(); return; }
+      try{ await cloud.auth.sendPasswordResetEmail(email); cloud.msg = 'Password reset email sent to '+email+'.'; }catch(e){ cloud.msg = authMsg(e); } render();
+    }
+    else if(act==='c-signout'){ unsubTrip(); await cloud.auth.signOut(); cloud.msg = ''; }
+    else if(act==='c-resend'){ try{ await cloud.user.sendEmailVerification(); cloud.msg = 'Verification email sent again. Check your spam folder too.'; }catch(e){ cloud.msg = authMsg(e); } render(); }
+    else if(act==='c-verified'){
+      try{ await cloud.auth.currentUser.reload(); await cloud.auth.currentUser.getIdToken(true); }catch(e){}
+      const u = cloud.auth.currentUser;
+      if(u && u.emailVerified){ cloud.msg = ''; onUser(u); } else { cloud.msg = 'Not verified yet. Open the link in the email first, then tap this again.'; render(); }
+    }
+    else if(act==='c-upload') cloudUpload();
+    else if(act==='c-open') cloudOpen(t.dataset.id);
+    else if(act==='c-unlink'){ unsubTrip(); delete state.cloudId; saveLocal(); cloud.msg = 'Stopped syncing. The trip stays on this phone and in the cloud.'; render(); }
+    else if(act==='c-rmmember'){
+      try{ await cloud.db.collection('trips').doc(state.cloudId).update({members:fb.firestore.FieldValue.arrayRemove(t.dataset.e)}); }catch(e){ cloud.msg = 'Could not remove them: '+e.message; render(); }
+    }
+    else if(act==='c-delete'){
+      if(!confirm('Delete this trip from the cloud for everyone? It stays on this phone.')) return;
+      try{ await cloud.db.collection('trips').doc(state.cloudId).delete(); }catch(e){ cloud.msg = 'Could not delete: '+e.message; render(); }
+    }
+  }
+  function cloudHtml(){
+    const c = cloud, msg = c.msg ? `<div class="cloud-msg" role="status">${esc(c.msg)}</div>` : '';
+    const hint = t => `<p class="hint">${t}</p>`;
+    if(c.status==='off') return hint('Cloud sync is not set up yet, so this trip lives on this phone only.');
+    if(c.status==='loading') return hint('Connecting…');
+    if(c.status==='offline') return hint('Cloud sync needs an internet connection. Your trip is still saved on this phone.');
+    if(!c.user){
+      const up = c.mode==='signup';
+      return hint('Sign in to keep this trip in the cloud and share it with the people on it. Everyone needs their own account.')+`
+        <div class="card cloud-card"><form data-form="auth">
+          <input type="email" data-cf="email" value="${esc(c.email)}" placeholder="Email" autocomplete="email" autocapitalize="off" aria-label="Email">
+          <input type="password" data-cf="pass" value="${esc(c.pass)}" placeholder="Password" autocomplete="${up?'new-password':'current-password'}" aria-label="Password">
+          <button class="btn" ${c.busy?'disabled':''}>${up?'Create account':'Sign in'}</button>
+        </form>
+        <div class="cloud-row"><button class="linkbtn" data-act="c-mode">${up?'I already have an account':'Create an account'}</button>${up?'':'<button class="linkbtn" data-act="c-reset">Forgot password</button>'}</div>${msg}</div>`;
+    }
+    if(!c.user.emailVerified){
+      return hint('One more step: verify your email so only you can open your trips.')+`
+        <div class="card cloud-card"><div class="cloud-who">Signed in as ${esc(c.user.email)}</div>
+        <div class="cloud-row"><button class="btn small" data-act="c-verified">I verified my email</button><button class="btn ghost small" data-act="c-resend">Resend email</button><button class="btn ghost small" data-act="c-signout">Sign out</button></div>${msg}</div>`;
+    }
+    const isOwner = c.owner === c.user.uid, others = c.trips.filter(x => x.id !== state.cloudId);
+    let body = `<div class="cloud-who">Signed in as ${esc(c.user.email)}</div>`;
+    if(state.cloudId){
+      body += `<p class="hint" style="margin:10px 0 0">This trip is synced. Changes appear on everyone's phone.</p>
+        <h3 class="h3" style="margin-top:14px">People with access</h3>
+        <ul class="members">${c.members.map(m => `<li><span>${esc(m)}${m===c.ownerEmail?' (owner)':''}</span>${isOwner && m!==c.ownerEmail ? `<button class="linkbtn" data-act="c-rmmember" data-e="${esc(m)}">Remove</button>`:''}</li>`).join('')}</ul>
+        ${isOwner ? `<form data-form="share" class="add-person" style="margin-top:10px"><input name="m" type="email" placeholder="Friend's email" aria-label="Friend's email" autocapitalize="off" autocomplete="off"><button class="btn small ghost">Add</button></form>` : '<p class="note">Only the owner can add or remove people.</p>'}
+        <div class="cloud-row"><button class="btn ghost small" data-act="c-unlink">Stop syncing</button>${isOwner?'<button class="btn ghost small" data-act="c-delete">Delete from cloud</button>':''}</div>`;
+    } else {
+      body += `<div class="cloud-row"><button class="btn small" data-act="c-upload">Save this trip to the cloud</button></div>`;
+    }
+    if(others.length) body += `<h3 class="h3" style="margin-top:16px">Your cloud trips</h3>${others.map(x => `<div class="trip-pick"><span>${esc(x.name)}</span><button class="btn ghost small" data-act="c-open" data-id="${esc(x.id)}">Open</button></div>`).join('')}`;
+    body += `<div class="cloud-row"><button class="btn ghost small" data-act="c-signout">Sign out</button></div>`;
+    return `<div class="card cloud-card">${body}${msg}</div>`;
+  }
+
   document.title = state.name || 'Trip Split';
   render();
+  cloudInit();
   if('serviceWorker' in navigator && location.protocol.indexOf('http')===0){
     navigator.serviceWorker.register('sw.js').catch(()=>{});
   }
