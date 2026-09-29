@@ -125,6 +125,22 @@ label.f input,label.f select{border:1.5px solid var(--line);border-radius:10px;p
 .catrow .bar{grid-column:1/-1;margin-top:0}
 .pct{color:var(--muted);font-size:13px;margin-left:4px}
 .note{color:var(--muted);font-size:14px;margin:12px 0 0}
+.h3{font-family:var(--display);font-weight:700;font-size:17px;margin:24px 0 4px}
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:inherit}
+table.grid{border-collapse:separate;border-spacing:0;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+.grid th,.grid td{padding:10px 12px;border-top:1px solid var(--line);text-align:right;white-space:nowrap;background:var(--card);font-weight:400}
+.grid thead th{border-top:0;font-weight:600;color:var(--muted);font-size:13px}
+.grid tbody th,.grid tfoot th,.grid thead th:first-child{text-align:left;position:sticky;left:0;z-index:1;min-width:128px;max-width:170px;white-space:normal;font-weight:600;box-shadow:1px 0 0 var(--line)}
+.grid tfoot th,.grid tfoot td{background:var(--tint);font-weight:600}
+.grid tfoot tr:first-child th,.grid tfoot tr:first-child td{border-top:2px solid var(--line)}
+.grid.fit th:first-child,.grid.fit td:first-child{min-width:0;max-width:none;position:static;box-shadow:none}
+.grid.fit th,.grid.fit td{padding:10px 8px}
+.grid.fit th:first-child{padding-left:14px}
+.grid.fit th:last-child,.grid.fit td:last-child{padding-right:14px}
+@media (max-width:400px){.grid.fit{font-size:13px}.grid.fit th,.grid.fit td{padding:10px 5px}.grid.fit th:first-child{padding-left:12px}.grid.fit th:last-child,.grid.fit td:last-child{padding-right:12px}}
+@media (max-width:340px){.grid.fit{font-size:12px}.grid.fit th,.grid.fit td{padding:10px 4px}}
+.gsub{display:block;color:var(--muted);font-size:12px;font-weight:400}
+.grid .z{color:var(--muted)}
 .foot{margin-top:40px;display:flex;gap:10px;flex-wrap:wrap}
 .amt-row{display:flex;gap:6px}
 .amt-row{align-items:stretch}
@@ -236,6 +252,50 @@ label.f .amt-row input{flex:1 1 auto;width:auto;min-width:0}
     return {per, transfers};
   }
 
+  const viewCode = () => state.view && rateOf(state.view) ? state.view : state.currency;
+  const toNum = c => Math.round(c / rateOf(viewCode())) / 100;   // base cents -> number in the report currency
+  const numFmt = new Intl.NumberFormat('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const nf = c => numFmt.format(toNum(c));
+  const sgn = c => c>0 ? '+'+nf(c) : c<0 ? '−'+nf(-c) : '–';
+  const tone = c => c>0 ? 'pos' : c<0 ? 'neg' : 'z';
+  // whole-amount versions keep the summary table narrow enough for a phone
+  const int0 = new Intl.NumberFormat('en-US',{maximumFractionDigits:0});
+  const nf0 = c => int0.format(Math.round(toNum(c)));
+  const sgn0 = c => { const r = Math.round(toNum(c)); return r>0 ? '+'+int0.format(r) : r<0 ? '−'+int0.format(-r) : '–'; };
+  const tone0 = c => tone(Math.round(toNum(c)));
+  const segHtml = () => curs().length>1 ? `<div class="seg" role="group" aria-label="Show amounts in">${curs().map(c=>`<button class="chip" data-act="view" data-c="${c}" aria-pressed="${c===state.view}">In ${c}</button>`).join('')}</div>` : '';
+
+  // One table of numbers used by the screen, the Excel file and the Google Sheets copy.
+  function tableData(){
+    const {per, transfers} = compute();
+    const people = state.people;
+    const rows = state.expenses.map(e => {
+      const sh = shares(e), cents = baseCents(e);
+      return {label:title(e), sub:'Paid by '+e.payer+', '+origTxt(e), payer:e.payer, amount:toNum(cents),
+              cells: people.map(p => (p===e.payer ? cents : 0) - (sh[p]||0))};
+    });
+    return {per, transfers, people, rows};
+  }
+  function overallHtml(){
+    const d = tableData(), {per, people, rows} = d;
+    if(!people.length || !rows.length) return '<div class="card empty">Add travelers and expenses to see the table.</div>';
+    const tot = k => people.reduce((n,p)=>n+per[p][k],0);
+    const summary = `<div class="tbl-wrap"><table class="grid fit"><thead><tr><th>Person</th><th>Paid</th><th>Share</th><th>Net</th></tr></thead>
+      <tbody>${people.map(p=>`<tr><th scope="row">${esc(p)}</th><td>${nf0(per[p].paid)}</td><td>${nf0(per[p].owe)}</td><td class="${tone0(per[p].net)}">${sgn0(per[p].net)}</td></tr>`).join('')}</tbody>
+      <tfoot><tr><th scope="row">Total</th><td>${nf0(tot('paid'))}</td><td>${nf0(tot('owe'))}</td><td>${sgn0(tot('net'))}</td></tr></tfoot></table></div>`;
+    const matrix = `<div class="tbl-wrap"><table class="grid"><thead><tr><th>Expense</th>${people.map(p=>`<th>${esc(p)}</th>`).join('')}</tr></thead>
+      <tbody>${rows.map(r=>`<tr><th scope="row">${esc(r.label)}<span class="gsub">${esc(r.sub)}</span></th>${r.cells.map(c=>`<td class="${tone(c)}">${sgn(c)}</td>`).join('')}</tr>`).join('')}</tbody>
+      <tfoot>
+        <tr><th scope="row">Paid</th>${people.map(p=>`<td>${nf(per[p].paid)}</td>`).join('')}</tr>
+        <tr><th scope="row">Share of costs</th>${people.map(p=>`<td>${nf(per[p].owe)}</td>`).join('')}</tr>
+        <tr><th scope="row">Net</th>${people.map(p=>`<td class="${tone(per[p].net)}">${sgn(per[p].net)}</td>`).join('')}</tr>
+      </tfoot></table></div>`;
+    return `<div class="card">${summary}</div>
+      <h3 class="h3">Who paid for what</h3>
+      <p class="hint">Each cell is what that person paid minus their share of that expense. Every column adds up to that person's net. Swipe sideways to see everyone.</p>
+      <div class="card">${matrix}</div>`;
+  }
+
   function render(){
     const {per, transfers} = compute();
     const total = state.expenses.reduce((s,e)=>s+baseCents(e),0);
@@ -326,7 +386,7 @@ label.f .amt-row input{flex:1 1 auto;width:auto;min-width:0}
 
       <section>
         <h2>Balance per person</h2>
-        ${curs().length>1?`<div class="seg" role="group" aria-label="Show amounts in">${curs().map(c=>`<button class="chip" data-act="view" data-c="${c}" aria-pressed="${c===state.view}">In ${c}</button>`).join('')}</div>`:''}
+        ${segHtml()}
         <p class="hint">What each person paid minus their shares. Green gets money back, red owes. Tap a name for the breakdown.</p>
         <div class="card">${state.people.map(p=>{
           const r = per[p], cls = r.net>0?'pos':r.net<0?'neg':'zero';
@@ -343,14 +403,31 @@ label.f .amt-row input{flex:1 1 auto;width:auto;min-width:0}
       </section>
 
       <section>
+        <h2>Overall table</h2>
+        ${segHtml()}
+        <p class="hint">Everyone's payments and shares in ${viewCode()}. Share is what each person owes for the trip. Net is paid minus share: green gets money back, red owes. This summary is rounded to whole amounts; the table below and the exports keep centavos.</p>
+        ${overallHtml()}
+      </section>
+
+      <section>
         <h2>Settle up</h2>
         <p class="hint">The fewest payments that make everyone even.</p>
         ${transfers.length ? `<ul class="transfers card">${transfers.map(t=>`<li><span class="t-names"><b>${esc(t.from)}</b><span class="arrow">pays</span><b>${esc(t.to)}</b></span><span class="t-amt">${fmt(t.v)}</span></li>`).join('')}</ul>`
           : `<div class="card empty">${state.expenses.length?'Everyone is even.':'Nothing to settle yet.'}</div>`}
       </section>
 
+      <section>
+        <h2>Export</h2>
+        <p class="hint">The Excel file has sheets for the summary, expenses, categories, the overall table and settle up. It opens in Excel, Numbers and Google Sheets.</p>
+        <div class="foot" style="margin-top:0">
+          <button class="btn small" data-act="xlsx">Export to Excel</button>
+          <button class="btn ghost small" data-act="tsv">Copy for Google Sheets</button>
+          <button class="btn ghost small" data-act="share">Share summary</button>
+        </div>
+        <p class="note" id="exportMsg" role="status"></p>
+      </section>
+
       <div class="foot">
-        <button class="btn small" data-act="share">Share summary</button>
         <button class="btn ghost small" data-act="backup">Backup</button>
         <button class="btn ghost small" data-act="restore">Restore</button>
         <button class="btn ghost small" data-act="clear">Start a new trip</button>
@@ -463,6 +540,8 @@ label.f .amt-row input{flex:1 1 auto;width:auto;min-width:0}
       editingId=null; form=blankForm(); openRows.clear(); persist(); render();
     }
     else if(act==='share') shareSummary();
+    else if(act==='xlsx') exportXlsx();
+    else if(act==='tsv') copyForSheets();
     else if(act==='backup') backup();
     else if(act==='restore'){ const f = app.querySelector('#restoreFile'); if(f) f.click(); }
     else if(act==='view'){ state.view = t.dataset.c; persist(); render(); }
@@ -477,7 +556,26 @@ label.f .amt-row input{flex:1 1 auto;width:auto;min-width:0}
     if((e.key==='Enter'||e.key===' ') && e.target.matches('.exp,.bal-row')){ e.preventDefault(); e.target.click(); }
   });
 
-  function note(text){ const el = document.getElementById('footMsg'); if(el) el.textContent = text; }
+  function note(text, id){ const el = document.getElementById(id || 'footMsg'); if(el) el.textContent = text; }
+
+  async function copyText(text){
+    try{ await navigator.clipboard.writeText(text); return true; }
+    catch(e){
+      const ta = document.createElement('textarea'); ta.value = text; ta.setAttribute('readonly',''); ta.style.position='fixed'; ta.style.opacity='0';
+      document.body.appendChild(ta); ta.select(); let ok = false; try{ ok = document.execCommand('copy'); }catch(_){} ta.remove(); return ok;
+    }
+  }
+  // Share sheet when the phone offers one (Save to Files, Numbers, Sheets...), otherwise a normal download.
+  async function saveFile(blob, name, msgId){
+    try{
+      const file = new File([blob], name, {type: blob.type});
+      if(navigator.canShare && navigator.canShare({files:[file]})){ await navigator.share({files:[file], title:name}); return; }
+    }catch(e){ if(e && e.name==='AbortError') return; }
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href), 2000);
+    note('Saved as '+name+'.', msgId);
+  }
+  const fileBase = () => (state.name||'trip').replace(/[^\w]+/g,'-').replace(/^-|-$/g,'') || 'trip';
 
   function summaryText(){
     const {per, transfers} = compute();
@@ -490,31 +588,134 @@ label.f .amt-row input{flex:1 1 auto;width:auto;min-width:0}
     return t;
   }
   async function shareSummary(){
-    if(!state.expenses.length){ note('Add an expense first.'); return; }
+    if(!state.expenses.length){ note('Add an expense first.', 'exportMsg'); return; }
     const text = summaryText();
     if(navigator.share){
       try{ await navigator.share({title:state.name, text}); return; }
       catch(e){ if(e && e.name==='AbortError') return; }
     }
-    try{ await navigator.clipboard.writeText(text); note('Summary copied. Paste it into your group chat.'); }
-    catch(e){
-      const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select();
-      let ok = false; try{ ok = document.execCommand('copy'); }catch(_){} ta.remove();
-      note(ok ? 'Summary copied. Paste it into your group chat.' : 'Could not copy. Select and copy the balances by hand.');
-    }
+    note(await copyText(text) ? 'Summary copied. Paste it into your group chat.' : 'Could not copy. Select the balances and copy them by hand.', 'exportMsg');
   }
-  async function backup(){
-    const name = (state.name||'trip').replace(/[^\w]+/g,'-').replace(/^-|-$/g,'') + '-backup.json';
-    const json = JSON.stringify(state, null, 2);
-    try{
-      const file = new File([json], name, {type:'application/json'});
-      if(navigator.canShare && navigator.canShare({files:[file]})){ await navigator.share({files:[file], title:name}); return; }
-    }catch(e){ if(e && e.name==='AbortError') return; }
-    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([json],{type:'application/json'}));
-    a.download = name; document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(()=>URL.revokeObjectURL(a.href), 2000);
-    note('Backup saved as '+name+'.');
+  function backup(){
+    saveFile(new Blob([JSON.stringify(state, null, 2)], {type:'application/json'}), fileBase()+'-backup.json', 'footMsg');
   }
+
+  // ---- Google Sheets: tab-separated text pastes straight into a sheet
+  async function copyForSheets(){
+    if(!state.expenses.length){ note('Add an expense first.', 'exportMsg'); return; }
+    const d = tableData(), cur = viewCode(), f = c => toNum(c).toFixed(2);
+    const lines = [['Expense','Paid by','Amount ('+cur+')', ...d.people]];
+    d.rows.forEach(r => lines.push([r.label, r.payer, r.amount.toFixed(2), ...r.cells.map(f)]));
+    lines.push(['Paid','','', ...d.people.map(p=>f(d.per[p].paid))]);
+    lines.push(['Share of costs','','', ...d.people.map(p=>f(d.per[p].owe))]);
+    lines.push(['Net','','', ...d.people.map(p=>f(d.per[p].net))]);
+    const text = lines.map(r => r.map(x => String(x).replace(/[\t\r\n]+/g,' ')).join('\t')).join('\n');
+    note(await copyText(text) ? 'Copied. In Google Sheets, tap a cell and paste.' : 'Could not copy. Use Export to Excel instead.', 'exportMsg');
+  }
+
+  // ---- Excel: a small .xlsx writer (no libraries, works offline)
+  const crcTable = (() => { const t = new Uint32Array(256); for(let n=0;n<256;n++){ let c=n; for(let k=0;k<8;k++) c = c&1 ? 0xEDB88320^(c>>>1) : c>>>1; t[n]=c>>>0; } return t; })();
+  const crc32 = u8 => { let c = 0xFFFFFFFF; for(let i=0;i<u8.length;i++) c = crcTable[(c^u8[i])&0xFF]^(c>>>8); return (c^0xFFFFFFFF)>>>0; };
+  function zipStore(files){
+    const enc = new TextEncoder(), d = new Date(), chunks = [], central = []; let offset = 0;
+    const dt = ((d.getFullYear()-1980)<<9)|((d.getMonth()+1)<<5)|d.getDate(), tm = (d.getHours()<<11)|(d.getMinutes()<<5)|(d.getSeconds()>>1);
+    files.forEach(f => {
+      const name = enc.encode(f.name), crc = crc32(f.data), size = f.data.length;
+      const lh = new DataView(new ArrayBuffer(30));
+      lh.setUint32(0,0x04034b50,true); lh.setUint16(4,20,true); lh.setUint16(6,0x0800,true); lh.setUint16(8,0,true);
+      lh.setUint16(10,tm,true); lh.setUint16(12,dt,true); lh.setUint32(14,crc,true); lh.setUint32(18,size,true); lh.setUint32(22,size,true);
+      lh.setUint16(26,name.length,true); lh.setUint16(28,0,true);
+      chunks.push(new Uint8Array(lh.buffer), name, f.data);
+      const ch = new DataView(new ArrayBuffer(46));
+      ch.setUint32(0,0x02014b50,true); ch.setUint16(4,20,true); ch.setUint16(6,20,true); ch.setUint16(8,0x0800,true); ch.setUint16(10,0,true);
+      ch.setUint16(12,tm,true); ch.setUint16(14,dt,true); ch.setUint32(16,crc,true); ch.setUint32(20,size,true); ch.setUint32(24,size,true);
+      ch.setUint16(28,name.length,true); ch.setUint32(42,offset,true);
+      central.push(new Uint8Array(ch.buffer), name);
+      offset += 30 + name.length + size;
+    });
+    const cdSize = central.reduce((n,c)=>n+c.length,0), end = new DataView(new ArrayBuffer(22));
+    end.setUint32(0,0x06054b50,true); end.setUint16(8,files.length,true); end.setUint16(10,files.length,true); end.setUint32(12,cdSize,true); end.setUint32(16,offset,true);
+    return new Blob([...chunks, ...central, new Uint8Array(end.buffer)], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  }
+  const XML = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
+  const xmlEsc = t => String(t).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g,'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const colName = i => { let s='', n=i+1; while(n>0){ const m=(n-1)%26; s=String.fromCharCode(65+m)+s; n=Math.floor((n-1)/26); } return s; };
+  // cell styles: 1 header, 2 number, 3 bold number, 4 bold text, 5 percent, 6 rate
+  const STYLES = XML+'<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><numFmts count="1"><numFmt numFmtId="164" formatCode="0.0000"/></numFmts>'
+    +'<fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts>'
+    +'<fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFEDF2FA"/><bgColor indexed="64"/></patternFill></fill></fills>'
+    +'<borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders>'
+    +'<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>'
+    +'<cellXfs count="7"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>'
+    +'<xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1"/>'
+    +'<xf numFmtId="4" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/>'
+    +'<xf numFmtId="4" fontId="1" fillId="0" borderId="0" xfId="0" applyNumberFormat="1" applyFont="1"/>'
+    +'<xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/>'
+    +'<xf numFmtId="9" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/>'
+    +'<xf numFmtId="164" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/></cellXfs>'
+    +'<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>';
+  function sheetXml(rows){
+    const widths = [];
+    rows.forEach(r => r.forEach((c,i) => { const v = c && typeof c==='object' ? c.v : c; const len = typeof v==='number' ? 14 : String(v==null?'':v).length; widths[i] = Math.max(widths[i]||10, Math.min(42, len+2)); }));
+    let x = XML+'<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>'
+      +'<cols>'+widths.map((w,i)=>`<col min="${i+1}" max="${i+1}" width="${w}" customWidth="1"/>`).join('')+'</cols><sheetData>';
+    rows.forEach((row,ri) => {
+      x += `<row r="${ri+1}">`;
+      row.forEach((c,ci) => {
+        if(c===null || c===undefined || c==='') return;
+        const cell = typeof c==='object' ? c : {v:c}, ref = colName(ci)+(ri+1), st = cell.s ? ` s="${cell.s}"` : '';
+        x += typeof cell.v==='number' ? `<c r="${ref}"${st}><v>${cell.v}</v></c>` : `<c r="${ref}"${st} t="inlineStr"><is><t xml:space="preserve">${xmlEsc(cell.v)}</t></is></c>`;
+      });
+      x += '</row>';
+    });
+    return x+'</sheetData></worksheet>';
+  }
+  function buildXlsx(sheets){
+    const R = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships', files = [];
+    files.push(['[Content_Types].xml', XML+'<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'
+      +sheets.map((s,i)=>`<Override PartName="/xl/worksheets/sheet${i+1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join('')
+      +'<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>']);
+    files.push(['_rels/.rels', XML+`<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="${R}/officeDocument" Target="xl/workbook.xml"/></Relationships>`]);
+    files.push(['xl/workbook.xml', XML+`<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="${R}"><sheets>`
+      +sheets.map((s,i)=>`<sheet name="${xmlEsc(s.name)}" sheetId="${i+1}" r:id="rId${i+1}"/>`).join('')+'</sheets></workbook>']);
+    files.push(['xl/_rels/workbook.xml.rels', XML+'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+      +sheets.map((s,i)=>`<Relationship Id="rId${i+1}" Type="${R}/worksheet" Target="worksheets/sheet${i+1}.xml"/>`).join('')
+      +`<Relationship Id="rId${sheets.length+1}" Type="${R}/styles" Target="styles.xml"/></Relationships>`]);
+    files.push(['xl/styles.xml', STYLES]);
+    sheets.forEach((s,i) => files.push([`xl/worksheets/sheet${i+1}.xml`, sheetXml(s.rows)]));
+    const enc = new TextEncoder();
+    return zipStore(files.map(([name,text]) => ({name, data: enc.encode(text)})));
+  }
+  function sheetsData(){
+    const d = tableData(), cur = viewCode(), {per, transfers, people, rows} = d, n = toNum;
+    const H = v => ({v, s:1}), N = v => ({v, s:2}), NB = v => ({v, s:3}), B = v => ({v, s:4});
+    const tot = k => people.reduce((a,p)=>a+per[p][k],0);
+    const total = state.expenses.reduce((a,e)=>a+baseCents(e),0);
+    const summary = [[H('Person'), H('Paid ('+cur+')'), H('Share of costs ('+cur+')'), H('Net ('+cur+', + gets back)')],
+      ...people.map(p => [p, N(n(per[p].paid)), N(n(per[p].owe)), N(n(per[p].net))]),
+      [B('Total'), NB(n(tot('paid'))), NB(n(tot('owe'))), NB(n(tot('net')))]];
+    const expenses = [[H('#'),H('Category'),H('Details'),H('Paid by'),H('Currency'),H('Amount'),H('Rate to '+cur),H('Amount ('+cur+')'),H('Split among'),H('Share each ('+cur+')')],
+      ...state.expenses.map((e,i) => [i+1, e.cat, e.desc||'', e.payer, e.cur, N(e.amount), {v:+(rateOf(e.cur)/rateOf(cur)).toFixed(6), s:6}, N(n(baseCents(e))), e.split.join(', '), N(n(Math.round(baseCents(e)/(e.split.length||1))))]),
+      [B('Total'),'','','','','','',NB(n(total))]];
+    const byCat = {}; state.expenses.forEach(e => { byCat[e.cat] = (byCat[e.cat]||0) + baseCents(e); });
+    const cats = [[H('Category'), H('Amount ('+cur+')'), H('Share of trip')],
+      ...Object.entries(byCat).sort((a,b)=>b[1]-a[1]).map(([c,v]) => [c, N(n(v)), {v:total?+(v/total).toFixed(4):0, s:5}]),
+      [B('Total'), NB(n(total))]];
+    const matrix = [[H('Expense'), H('Paid by'), H('Amount ('+cur+')'), ...people.map(H)],
+      ...rows.map(r => [r.label, r.payer, N(r.amount), ...r.cells.map(c=>N(n(c)))]),
+      [B('Paid'),'','', ...people.map(p=>NB(n(per[p].paid)))],
+      [B('Share of costs'),'','', ...people.map(p=>NB(n(per[p].owe)))],
+      [B('Net (+ gets back)'),'','', ...people.map(p=>NB(n(per[p].net)))]];
+    const settle = [[H('From'), H('To'), H('Amount ('+cur+')')],
+      ...(transfers.length ? transfers.map(t => [t.from, t.to, N(n(t.v))]) : [['Everyone is even','','']])];
+    return [{name:'Summary', rows:summary},{name:'Expenses', rows:expenses},{name:'By category', rows:cats},{name:'Who paid for what', rows:matrix},{name:'Settle up', rows:settle}];
+  }
+  function exportXlsx(){
+    if(!state.expenses.length){ note('Add an expense first.', 'exportMsg'); return; }
+    let blob; try{ blob = buildXlsx(sheetsData()); }catch(e){ note('Could not build the Excel file. Try Copy for Google Sheets instead.', 'exportMsg'); return; }
+    saveFile(blob, fileBase()+'.xlsx', 'exportMsg');
+  }
+
   function restore(input){
     const f = input.files && input.files[0]; if(!f) return;
     const r = new FileReader();
