@@ -1,0 +1,539 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Trip Split</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Trip Split">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#F5F7FA">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style id="app-style">
+:root{
+  --paper:#F5F7FA; --card:#FFFFFF; --ink:#1B2838; --muted:#667385; --line:#DCE2EA;
+  --red:#C8323C; --blue:#1F4E9C; --pos:#1E7A4C; --neg:#B4302F; --tint:#EDF2FA;
+  --display:"Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --body:"IBM Plex Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#10161F; --card:#18202B; --ink:#E7ECF3; --muted:#93A0B2; --line:#2A3544;
+    --red:#E0545C; --blue:#6E9BE8; --pos:#4FC08A; --neg:#EE6B68; --tint:#1D2A3B;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#10161F; --card:#18202B; --ink:#E7ECF3; --muted:#93A0B2; --line:#2A3544;
+  --red:#E0545C; --blue:#6E9BE8; --pos:#4FC08A; --neg:#EE6B68; --tint:#1D2A3B;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);-webkit-text-size-adjust:100%}
+button,.chip,.exp,.bal-row{touch-action:manipulation}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit;color:inherit}
+.airmail{height:10px;background:repeating-linear-gradient(-45deg,var(--red) 0 14px,transparent 14px 22px,var(--blue) 22px 36px,transparent 36px 44px)}
+.wrap{max-width:760px;margin:0 auto;padding:20px 16px 64px}
+header.top{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:flex-end;justify-content:space-between;margin:10px 0 22px}
+.trip-name{font-family:var(--display);font-weight:800;font-size:clamp(30px,8vw,46px);line-height:1.05;letter-spacing:-.02em;border:0;background:transparent;padding:2px 0;width:100%;min-width:0;border-bottom:2px dashed transparent}
+.trip-name:hover,.trip-name:focus{border-bottom-color:var(--line);outline:none}
+.title-col{flex:1 1 320px;min-width:0}
+.sub{color:var(--muted);font-size:14px;margin-top:4px}
+.savebar{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--muted)}
+.btn{border:1.5px solid var(--ink);background:var(--ink);color:var(--paper);border-radius:999px;padding:8px 16px;font-weight:600;cursor:pointer;font-size:15px}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn.small{padding:8px 14px;font-size:14px}
+.btn:disabled{opacity:.45;cursor:default}
+.btn:focus-visible,.chip:focus-visible,input:focus-visible,select:focus-visible,.exp:focus-visible,.bal-row:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+section{margin-top:30px}
+h2{font-family:var(--display);font-weight:700;font-size:22px;letter-spacing:-.01em;margin:0 0 4px}
+.hint{color:var(--muted);font-size:14px;margin:0 0 14px}
+.people{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.chip{display:inline-flex;align-items:center;gap:6px;border:1.5px solid var(--line);background:var(--card);border-radius:999px;padding:5px 8px 5px 12px;font-weight:500;cursor:pointer}
+.chip .x{border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:20px;line-height:1;padding:6px 8px;margin:-6px -4px -6px 0}
+.add-person{display:flex;gap:6px}
+.add-person{flex:1 1 200px;min-width:0}
+.add-person input{border:1.5px dashed var(--line);border-radius:999px;padding:9px 14px;background:transparent;flex:1;min-width:0;width:100%;font-size:16px}
+.msg{color:var(--neg);font-size:14px;margin-top:8px;min-height:1px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px}
+form.exp-form{padding:16px;display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
+form.exp-form>*{min-width:0}
+.row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+.row>*{min-width:0}
+@media (max-width:520px){.row{grid-template-columns:minmax(0,1fr)}}
+label.f{display:grid;grid-template-columns:minmax(0,1fr);min-width:0;gap:4px;font-size:14px;color:var(--muted);font-weight:500}
+label.f input,label.f select{border:1.5px solid var(--line);border-radius:10px;padding:12px;background:var(--paper);color:var(--ink);font-size:16px;width:100%;min-width:0;max-width:100%;min-height:46px}
+.amount-in{font-variant-numeric:tabular-nums}
+.split-head{display:flex;justify-content:space-between;align-items:baseline;font-size:14px;color:var(--muted);font-weight:500}
+.linkbtn{border:0;background:none;color:var(--blue);cursor:pointer;font-weight:600;font-size:14px;padding:2px}
+.pick{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.pick .chip{padding:9px 14px;min-height:40px}
+.pick .chip[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
+.each{font-size:14px;color:var(--muted)}
+.form-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.exp-list{list-style:none;margin:14px 0 0;padding:0}
+.exp{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 12px;padding:14px 16px;border-top:1px solid var(--line);cursor:pointer;background:var(--card)}
+.exp:first-child{border-top:0;border-radius:14px 14px 0 0}
+.exp:last-child{border-radius:0 0 14px 14px}
+.exp:only-child{border-radius:14px}
+.exp:hover{background:var(--tint)}
+.exp .what{font-weight:600}
+.exp .amt{font-family:var(--display);font-weight:700;font-variant-numeric:tabular-nums;text-align:right}
+.exp .who{grid-column:1/-1;color:var(--muted);font-size:14px;overflow-wrap:anywhere}
+.exp.editing{outline:2px solid var(--blue);outline-offset:-2px}
+.empty{padding:22px 16px;color:var(--muted);text-align:center}
+.total{display:flex;justify-content:space-between;padding:10px 4px 0;color:var(--muted);font-size:14px}
+.total b{color:var(--ink);font-variant-numeric:tabular-nums}
+.bal-row{padding:14px 16px;border-top:1px solid var(--line);cursor:pointer}
+.bal-row:first-child{border-top:0}
+.bal-top{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:baseline;gap:12px}
+.bal-name{font-weight:600}
+.bal-net{font-family:var(--display);font-weight:800;font-size:22px;font-variant-numeric:tabular-nums}
+.pos{color:var(--pos)} .neg{color:var(--neg)} .zero{color:var(--muted)}
+.bal-line{font-size:14px;color:var(--muted)}
+.bar{position:relative;height:6px;margin-top:8px;background:var(--tint);border-radius:3px;overflow:hidden}
+.bar i{position:absolute;top:0;bottom:0}
+.bar .mid{position:absolute;left:50%;top:-2px;bottom:-2px;width:1.5px;background:var(--muted);opacity:.5}
+.detail{margin-top:10px;border-top:1px dashed var(--line);padding-top:8px;display:none}
+.bal-row[aria-expanded="true"] .detail{display:block}
+.detail table{width:100%;border-collapse:collapse;font-size:14px}
+.detail td{padding:4px 0;vertical-align:top}
+.detail td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;padding-left:12px}
+.detail tr.sum td{border-top:1px solid var(--line);font-weight:600;padding-top:6px}
+.transfers{list-style:none;margin:0;padding:0}
+.transfers li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:14px 16px;border-top:1px solid var(--line)}
+.transfers li:first-child{border-top:0}
+.transfers li b{white-space:nowrap}
+.t-names{display:flex;flex-wrap:wrap;align-items:baseline;min-width:0}
+.t-amt{white-space:nowrap}
+.transfers .t-amt{font-family:var(--display);font-weight:800;font-size:20px;font-variant-numeric:tabular-nums}
+.arrow{color:var(--red);font-weight:700;padding:0 6px}
+.t-names .arrow:first-of-type{padding-left:6px}
+.row.one{grid-template-columns:minmax(0,1fr)}
+.cat{display:inline-block;font-size:12px;font-weight:600;color:var(--blue);background:var(--tint);border-radius:999px;padding:1px 9px;margin-right:8px;vertical-align:1px}
+.exp .what{overflow-wrap:anywhere}
+.catrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;align-items:baseline;padding:12px 16px;border-top:1px solid var(--line)}
+.catrow:first-child{border-top:0}
+.catrow b{font-family:var(--display);font-variant-numeric:tabular-nums}
+.catrow .bar{grid-column:1/-1;margin-top:0}
+.pct{color:var(--muted);font-size:13px;margin-left:4px}
+.note{color:var(--muted);font-size:14px;margin:12px 0 0}
+.foot{margin-top:40px;display:flex;gap:10px;flex-wrap:wrap}
+.amt-row{display:flex;gap:6px}
+.amt-row{align-items:stretch}
+label.f .amt-row{display:flex;min-width:0}
+label.f .amt-row select{width:92px;flex:0 0 92px}
+label.f .amt-row input{flex:1 1 auto;width:auto;min-width:0}
+.conv{white-space:nowrap}
+.cur-card{padding:6px 16px 10px}
+.cur-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;padding:8px 0;border-top:1px solid var(--line)}
+.cur-row:first-child{border-top:0}
+.cur-row > span:first-child{min-width:64px;font-weight:500}
+.cur-row select,.rate-in input{border:1.5px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--paper);color:var(--ink);font-size:16px}
+.rate-in{display:flex;align-items:center;gap:6px;color:var(--muted)}
+.rate-in input{width:84px;min-width:0;font-variant-numeric:tabular-nums}
+.cur-row .x{flex:0 0 auto;margin-left:auto;border:0;background:transparent;color:var(--muted);font-size:20px;cursor:pointer;padding:0 6px}
+.seg{display:flex;gap:8px;margin:0 0 12px}
+.seg .chip{padding:5px 14px}
+.seg .chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+@media (max-width:400px){
+  .wrap{padding:14px 12px 48px}
+  form.exp-form{padding:14px}
+  .bal-net{font-size:19px}
+  .transfers .t-amt{font-size:18px}
+  .form-actions .btn{flex:1 1 auto}
+}
+@media (prefers-reduced-motion:no-preference){.bar i{transition:width .3s ease,left .3s ease}}
+</style>
+</head>
+<body>
+<div class="airmail" aria-hidden="true"></div>
+<div id="app" class="wrap"></div>
+<script id="app-script">
+(function(){
+  const STORE_KEY = 'tripsplit:v1';
+  const DEFAULT_STATE = {name:'Trip expenses', currency:'PHP', rates:{TWD:1.9}, view:'PHP', people:[], expenses:[]};
+  const LEGACY = {airfare:'Flights',flight:'Flights',flights:'Flights',hotel:'Hotel',food:'Food',taxi:'Transport'};
+  function normalize(x){
+    if(!x || !Array.isArray(x.people) || !Array.isArray(x.expenses)) return null;
+    if(!x.name) x.name = 'Trip expenses';
+    if(!x.currency) x.currency = 'PHP';
+    if(!x.rates || typeof x.rates!=='object') x.rates = {};
+    if(!x.view || (x.view!==x.currency && !x.rates[x.view])) x.view = x.currency;
+    x.expenses.forEach(e => {
+      if(!e.cat){ const k=(e.desc||'').trim().toLowerCase(); if(LEGACY[k]){ e.cat=LEGACY[k]; e.desc=''; } else e.cat='Other'; }
+      if(!e.cur) e.cur = x.currency;
+    });
+    return x;
+  }
+  let state = null;
+  try{ state = normalize(JSON.parse(localStorage.getItem(STORE_KEY) || 'null')); }catch(e){}
+  if(!state) state = normalize(JSON.parse(JSON.stringify(DEFAULT_STATE)));
+  let saveFailed = false;
+  const DEFAULT_CATS = ['Food','Flights','Hotel','Transport','Activities','Shopping','Other'];
+  const cats = () => [...DEFAULT_CATS, ...new Set(state.expenses.map(e=>e.cat).filter(c=>c && !DEFAULT_CATS.includes(c)))];
+  const title = e => e.desc ? e.cat+': '+e.desc : e.cat;
+  const ALL_CURS = ['PHP','TWD','USD','JPY','KRW','HKD','SGD','THB','VND','CNY','EUR','AUD','GBP'];
+  const readOnly = false;
+  let editingId = null, openRows = new Set(), peopleMsg = '';
+  let form = blankForm();
+
+  function blankForm(){ return {cat: state.lastCat || 'Food', catNew:'', desc:'', amount:'', cur: state.lastCur || state.currency, payer: state.people[0] || '', split:[...state.people]}; }
+  const app = document.getElementById('app');
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const curs = () => [state.currency, ...Object.keys(state.rates)];
+  const rateOf = c => c===state.currency ? 1 : (state.rates[c] || 0);
+  // money in a given currency (cents of that currency)
+  const fmtIn = (cents, cur) => {
+    try{ return new Intl.NumberFormat('en-PH',{style:'currency',currency:cur}).format(cents/100); }
+    catch(e){ return cur+' '+(cents/100).toFixed(2); }
+  };
+  // base-currency cents shown in the chosen report currency
+  const fmt = baseCents => { const v = state.view && rateOf(state.view) ? state.view : state.currency; return fmtIn(Math.round(baseCents / rateOf(v)), v); };
+  const baseCents = e => Math.round(e.amount * rateOf(e.cur) * 100);
+  const origTxt = e => fmtIn(Math.round(e.amount*100), e.cur);
+  const toCents = v => Math.round(parseFloat(String(v).replace(/,/g,'')) * 100);
+
+  function persist(){
+    try{ localStorage.setItem(STORE_KEY, JSON.stringify(state)); saveFailed = false; }catch(e){ saveFailed = true; }
+  }
+
+  // Split an expense in cents; leftover cents go to the first people in the list.
+  function shares(exp){
+    const total = baseCents(exp), n = exp.split.length, out = {};
+    if(!n) return out;
+    const base = Math.floor(total/n); let rem = total - base*n;
+    exp.split.forEach(p => { out[p] = base + (rem > 0 ? 1 : 0); if(rem>0) rem--; });
+    return out;
+  }
+
+  function compute(){
+    const per = {};
+    state.people.forEach(p => per[p] = {paid:0, owe:0, lines:[]});
+    state.expenses.forEach(e => {
+      const cents = baseCents(e), sh = shares(e), tag = e.cur!==state.view ? ' ('+origTxt(e)+')' : '';
+      if(per[e.payer]){ per[e.payer].paid += cents; per[e.payer].lines.push({label:'Paid for '+title(e)+tag, v:cents}); }
+      Object.entries(sh).forEach(([p,v]) => { if(per[p]){ per[p].owe += v; per[p].lines.push({label:title(e)+' share (1 of '+e.split.length+')', v:-v}); } });
+    });
+    state.people.forEach(p => per[p].net = per[p].paid - per[p].owe);
+    // Settle: largest debtor pays largest creditor until everyone is even.
+    const cred = state.people.filter(p=>per[p].net>0).map(p=>({p,v:per[p].net})).sort((a,b)=>b.v-a.v);
+    const debt = state.people.filter(p=>per[p].net<0).map(p=>({p,v:-per[p].net})).sort((a,b)=>b.v-a.v);
+    const transfers = []; let i=0,j=0;
+    while(i<debt.length && j<cred.length){
+      const x = Math.min(debt[i].v, cred[j].v);
+      if(x>0) transfers.push({from:debt[i].p, to:cred[j].p, v:x});
+      debt[i].v -= x; cred[j].v -= x;
+      if(debt[i].v===0) i++; if(cred[j].v===0) j++;
+    }
+    return {per, transfers};
+  }
+
+  function render(){
+    const {per, transfers} = compute();
+    const total = state.expenses.reduce((s,e)=>s+baseCents(e),0);
+    const maxAbs = Math.max(1, ...state.people.map(p=>Math.abs(per[p].net)));
+    const amt = toCents(form.amount);
+    const eachTxt = eachText();
+    const byCat = {}; state.expenses.forEach(e => { byCat[e.cat] = (byCat[e.cat]||0) + baseCents(e); });
+    const catRows = Object.entries(byCat).sort((a,b)=>b[1]-a[1]);
+
+    const saveTxt = saveFailed ? '<span style="color:var(--neg)">Could not save on this phone. Tap Backup below.</span>'
+      : (state.people.length || state.expenses.length) ? '<span>Saved on this phone</span>' : '';
+
+    app.innerHTML = `
+      <header class="top">
+        <div class="title-col">
+          <input class="trip-name" data-f="name" value="${esc(state.name)}" aria-label="Trip name" ${readOnly?'readonly':''}>
+          <div class="sub">${state.people.length} travelers, ${state.expenses.length} expenses, ${fmt(total)} total</div>
+        </div>
+        <div class="savebar" aria-live="polite">${saveTxt}</div>
+      </header>
+
+      <section>
+        <h2>Travelers</h2>
+        <p class="hint">Everyone who might pay or share a cost.</p>
+        <div class="people">
+          ${state.people.map(p=>`<span class="chip" tabindex="-1">${esc(p)}${readOnly?'':`<button class="x" data-act="rm-person" data-p="${esc(p)}" aria-label="Remove ${esc(p)}">×</button>`}</span>`).join('')}
+          ${readOnly?'':`<form class="add-person" data-form="person"><input name="p" placeholder="Add a name" aria-label="Add a traveler" autocomplete="off"><button class="btn small ghost">Add</button></form>`}
+        </div>
+        <div class="msg" role="status">${esc(peopleMsg)}</div>
+      </section>
+
+      <section>
+        <h2>Expenses</h2>
+        <p class="hint">Who paid, and who shares the cost. The payer only gets a share if you tick them.</p>
+        ${readOnly?'':`
+        <form class="card exp-form" data-form="expense">
+          <div class="row">
+            <label class="f">Category<select data-ff="cat">${cats().map(c=>`<option ${c===form.cat?'selected':''}>${esc(c)}</option>`).join('')}<option value="__new" ${form.cat==='__new'?'selected':''}>New category…</option></select></label>
+            <label class="f">Details, optional<input data-ff="desc" value="${esc(form.desc)}" placeholder="Din Tai Fung" autocomplete="off"></label>
+          </div>
+          ${form.cat==='__new'?`<label class="f">New category name<input data-ff="catNew" value="${esc(form.catNew)}" placeholder="Tours, gifts, insurance" autocomplete="off"></label>`:''}
+          <div class="row one">
+            <label class="f">Amount<span class="amt-row"><select data-ff="cur" aria-label="Currency">${curs().map(c=>`<option ${c===form.cur?'selected':''}>${c}</option>`).join('')}</select><input class="amount-in" data-ff="amount" value="${esc(form.amount)}" inputmode="decimal" placeholder="0.00" required></span></label>
+          </div>
+          <label class="f">Paid by
+            <select data-ff="payer">${state.people.map(p=>`<option ${p===form.payer?'selected':''}>${esc(p)}</option>`).join('')}</select>
+          </label>
+          <div>
+            <div class="split-head"><span>Split equally among</span>
+              <span><button type="button" class="linkbtn" data-act="all">Everyone</button> <button type="button" class="linkbtn" data-act="none">Clear</button></span>
+            </div>
+            <div class="pick">${state.people.map(p=>`<button type="button" class="chip" data-act="toggle" data-p="${esc(p)}" aria-pressed="${form.split.includes(p)}">${esc(p)}</button>`).join('')}</div>
+            <div class="each" style="margin-top:6px">${eachTxt}</div>
+          </div>
+          <div class="form-actions">
+            ${editingId?`<button type="button" class="btn ghost" data-act="del-exp">Delete</button><button type="button" class="btn ghost" data-act="cancel">Cancel</button>`:''}
+            <button class="btn" ${state.people.length?'':'disabled'}>${editingId?'Update expense':'Add expense'}</button>
+          </div>
+          <div class="msg" id="formMsg" role="status"></div>
+        </form>`}
+        ${state.expenses.length ? `<ul class="exp-list card">${state.expenses.map(e=>`
+          <li class="exp ${e.id===editingId?'editing':''}" tabindex="0" data-act="edit" data-id="${e.id}">
+            <span class="what"><span class="cat">${esc(e.cat)}</span>${esc(e.desc)}</span><span class="amt">${origTxt(e)}</span>
+            <span class="who">Paid by ${esc(e.payer)}, split ${e.split.length===state.people.length?'among everyone':'with '+e.split.map(esc).join(', ')} (${fmt(Math.round(baseCents(e)/e.split.length))} each)${e.cur!==state.view?' <span class="conv">≈ '+fmt(baseCents(e))+'</span>':''}</span>
+          </li>`).join('')}</ul>
+          <div class="total"><span>Trip total</span><b>${fmt(total)}</b></div>`
+        : `<div class="card empty" style="margin-top:14px">No expenses yet. Add the first one above.</div>`}
+      </section>
+
+      ${catRows.length?`<section>
+        <h2>Spending by category</h2>
+        <div class="card">${catRows.map(([c,v])=>`<div class="catrow"><span>${esc(c)} <span class="pct">${total?Math.round(v/total*100):0}%</span></span><b>${fmt(v)}</b><div class="bar" aria-hidden="true"><i style="left:0;width:${total?v/total*100:0}%;background:var(--blue)"></i></div></div>`).join('')}</div>
+      </section>`:''}
+
+      <section>
+        <h2>Currencies</h2>
+        <p class="hint">Expenses in other currencies are converted with these rates. Update them to what you actually paid at the money changer.</p>
+        <div class="card cur-card">
+          <label class="cur-row"><span>Main currency</span>
+            <select data-f="currency" ${readOnly?'disabled':''}>${ALL_CURS.map(c=>`<option ${c===state.currency?'selected':''}>${c}</option>`).join('')}</select></label>
+          ${Object.keys(state.rates).map(c=>`<div class="cur-row"><span>1 ${c} =</span>
+            <span class="rate-in"><input inputmode="decimal" data-rate="${c}" value="${state.rates[c]}" aria-label="${c} to ${state.currency} rate" ${readOnly?'readonly':''}> ${state.currency}</span>
+            ${readOnly?'':`<button class="x" data-act="rm-cur" data-c="${c}" aria-label="Remove ${c}">×</button>`}</div>`).join('')}
+          ${readOnly?'':`<div class="cur-row"><select data-f="addcur" aria-label="Add a currency"><option value="">Add a currency…</option>${ALL_CURS.filter(c=>!curs().includes(c)).map(c=>`<option>${c}</option>`).join('')}</select></div>`}
+          <div class="msg" id="curMsg" role="status"></div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Balance per person</h2>
+        ${curs().length>1?`<div class="seg" role="group" aria-label="Show amounts in">${curs().map(c=>`<button class="chip" data-act="view" data-c="${c}" aria-pressed="${c===state.view}">In ${c}</button>`).join('')}</div>`:''}
+        <p class="hint">What each person paid minus their shares. Green gets money back, red owes. Tap a name for the breakdown.</p>
+        <div class="card">${state.people.map(p=>{
+          const r = per[p], cls = r.net>0?'pos':r.net<0?'neg':'zero';
+          const w = Math.abs(r.net)/maxAbs*50;
+          const bar = r.net>=0 ? `left:50%;width:${w}%;background:var(--pos)` : `left:${50-w}%;width:${w}%;background:var(--neg)`;
+          const open = openRows.has(p);
+          return `<div class="bal-row" tabindex="0" role="button" data-act="row" data-p="${esc(p)}" aria-expanded="${open}">
+            <div class="bal-top"><span class="bal-name">${esc(p)}</span><span class="bal-net ${cls}">${r.net>0?'+':''}${fmt(r.net)}</span></div>
+            <div class="bal-line">Paid ${fmt(r.paid)}, share of costs ${fmt(r.owe)}. ${r.net>0?'Gets back':r.net<0?'Needs to pay':'All square'}${r.net?' '+fmt(Math.abs(r.net)):''}</div>
+            <div class="bar" aria-hidden="true"><i style="${bar}"></i><span class="mid"></span></div>
+            <div class="detail"><table>${r.lines.map(l=>`<tr><td>${esc(l.label)}</td><td class="n ${l.v>0?'pos':'neg'}">${l.v>0?'+':'−'}${fmt(Math.abs(l.v))}</td></tr>`).join('') || '<tr><td>No expenses involve this person yet.</td></tr>'}
+              <tr class="sum"><td>Net</td><td class="n ${cls}">${r.net>0?'+':''}${fmt(r.net)}</td></tr></table></div>
+          </div>`;}).join('') || '<div class="empty">Add travelers to see balances.</div>'}</div>
+      </section>
+
+      <section>
+        <h2>Settle up</h2>
+        <p class="hint">The fewest payments that make everyone even.</p>
+        ${transfers.length ? `<ul class="transfers card">${transfers.map(t=>`<li><span class="t-names"><b>${esc(t.from)}</b><span class="arrow">pays</span><b>${esc(t.to)}</b></span><span class="t-amt">${fmt(t.v)}</span></li>`).join('')}</ul>`
+          : `<div class="card empty">${state.expenses.length?'Everyone is even.':'Nothing to settle yet.'}</div>`}
+      </section>
+
+      <div class="foot">
+        <button class="btn small" data-act="share">Share summary</button>
+        <button class="btn ghost small" data-act="backup">Backup</button>
+        <button class="btn ghost small" data-act="restore">Restore</button>
+        <button class="btn ghost small" data-act="clear">Start a new trip</button>
+        <input type="file" id="restoreFile" accept=".json,application/json" hidden>
+      </div>
+      <p class="note" id="footMsg" role="status">Everything is stored on this phone only. Tap Backup now and then to keep a copy.</p>`;
+  }
+
+  function flash(id, text){ const el = document.getElementById(id); if(el) el.textContent = text; }
+
+  app.addEventListener('input', e => {
+    const t = e.target;
+    if(t.dataset.ff){ form[t.dataset.ff] = t.value; if(t.dataset.ff==='amount'){ const each=app.querySelector('.each'); if(each) each.textContent = eachText(); } }
+    if(t.dataset.rate){ const v = parseFloat(t.value); if(v>0){ state.rates[t.dataset.rate] = v; persist(); refreshKeepFocus(t); } }
+    if(t.dataset.f==='name'){ state.name = t.value; persist(); document.title = t.value || 'Trip Split'; updateSaveBar(); }
+  });
+  app.addEventListener('change', e => {
+    const t = e.target;
+    if(t.id==='restoreFile'){ restore(t); return; }
+    if(t.dataset.ff==='payer') form.payer = t.value;
+    if(t.dataset.ff==='cat'){ form.cat = t.value; if(t.value!=='__new') state.lastCat = t.value; render(); if(t.value==='__new'){ const n = app.querySelector('[data-ff="catNew"]'); if(n) n.focus(); } }
+    if(t.dataset.ff==='cur'){ form.cur = t.value; state.lastCur = t.value; render(); }
+    if(t.dataset.f==='currency') changeBase(t.value);
+    if(t.dataset.f==='addcur' && t.value){ state.rates[t.value] = 1; persist(); render(); const n = app.querySelector(`[data-rate="${t.value}"]`); if(n){ n.focus(); n.select(); } }
+  });
+
+  function eachText(){
+    const amt = toCents(form.amount), n = form.split.length;
+    if(!(amt>0) || !n) return '';
+    let t = fmtIn(Math.round(amt/n), form.cur)+' each';
+    if(form.cur!==state.currency) t += ' (≈ '+fmtIn(Math.round(amt*rateOf(form.cur)/n), state.currency)+')';
+    return t;
+  }
+  function refreshKeepFocus(el){
+    const sel = el.dataset.rate ? `[data-rate="${el.dataset.rate}"]` : null, pos = el.selectionStart;
+    render(); if(sel){ const n = app.querySelector(sel); if(n){ n.focus(); try{ n.setSelectionRange(pos,pos); }catch(e){} } }
+  }
+  // Switching the main currency re-expresses every rate against the new one.
+  function changeBase(nb){
+    const k = rateOf(nb) || 0;
+    if(!k){ // brand-new currency: needs a rate before it can be main
+      state.rates[nb] = 1;
+      flash('curMsg', 'Set the rate for '+nb+' first, then make it the main currency.'); persist(); render(); return;
+    }
+    const old = state.currency, rates = {};
+    Object.keys(state.rates).forEach(c => { if(c!==nb) rates[c] = +(state.rates[c]/k).toPrecision(6); });
+    rates[old] = +(1/k).toPrecision(6);
+    state.currency = nb; state.rates = rates; if(!curs().includes(state.view)) state.view = nb;
+    persist(); render();
+  }
+  function updateSaveBar(){
+    // Re-render only the save bar so the title input keeps focus while typing.
+    const bar = app.querySelector('.savebar'); if(!bar) return;
+    const keep = document.activeElement;
+    render(); if(keep && keep.dataset && keep.dataset.f==='name'){ const n = app.querySelector('.trip-name'); n.focus(); n.setSelectionRange(n.value.length,n.value.length); }
+  }
+
+  app.addEventListener('submit', e => {
+    e.preventDefault();
+    const f = e.target.dataset.form;
+    if(f==='person'){
+      const name = e.target.p.value.trim();
+      peopleMsg = '';
+      if(!name) return;
+      if(state.people.some(p=>p.toLowerCase()===name.toLowerCase())){ peopleMsg = name+' is already on the list.'; render(); return; }
+      state.people.push(name);
+      if(!editingId) form.split.push(name);
+      if(!form.payer) form.payer = name;
+      persist(); render();
+      const inp = app.querySelector('.add-person input'); if(inp) inp.focus();
+    }
+    if(f==='expense'){
+      const amt = toCents(form.amount);
+      let cat = form.cat==='__new' ? (form.catNew||'').trim() : form.cat;
+      if(!cat) return flash('formMsg','Name the new category, or pick one from the list.');
+      cat = cats().find(c=>c.toLowerCase()===cat.toLowerCase()) || (cat.charAt(0).toUpperCase()+cat.slice(1));
+      if(!(amt>0)) return flash('formMsg','Enter an amount above zero.');
+      if(!form.split.length) return flash('formMsg','Pick at least one person to share it.');
+      const data = {cat, desc:form.desc.trim(), amount:amt/100, cur:form.cur, payer:form.payer, split:state.people.filter(p=>form.split.includes(p))};
+      if(editingId){ Object.assign(state.expenses.find(x=>x.id===editingId), data); editingId = null; }
+      else state.expenses.push({id:'e'+Date.now().toString(36), ...data});
+      state.lastCat = cat; form = blankForm(); persist(); render();
+    }
+  });
+
+  app.addEventListener('click', e => {
+    const t = e.target.closest('[data-act]'); if(!t) return;
+    const act = t.dataset.act, p = t.dataset.p;
+    if(act==='rm-person'){
+      e.stopPropagation();
+      const n = state.expenses.filter(x=>x.payer===p || x.split.includes(p)).length;
+      if(n){ peopleMsg = p+' is in '+n+' expense'+(n>1?'s':'')+'. Edit or delete those first.'; render(); return; }
+      state.people = state.people.filter(x=>x!==p); form.split = form.split.filter(x=>x!==p);
+      if(form.payer===p) form.payer = state.people[0]||''; peopleMsg=''; persist(); render();
+    }
+    else if(act==='toggle'){ form.split = form.split.includes(p) ? form.split.filter(x=>x!==p) : [...form.split,p]; render(); }
+    else if(act==='all'){ form.split = [...state.people]; render(); }
+    else if(act==='none'){ form.split = []; render(); }
+    else if(act==='edit' && !readOnly){
+      const x = state.expenses.find(z=>z.id===t.dataset.id);
+      editingId = x.id; form = {cat:x.cat, catNew:'', desc:x.desc||'', amount:String(x.amount), cur:x.cur, payer:x.payer, split:[...x.split]}; render();
+      app.querySelector('.exp-form').scrollIntoView({behavior: matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth', block:'start'});
+    }
+    else if(act==='cancel'){ editingId=null; form=blankForm(); render(); }
+    else if(act==='del-exp'){ state.expenses = state.expenses.filter(x=>x.id!==editingId); editingId=null; form=blankForm(); persist(); render(); }
+    else if(act==='row'){ openRows.has(p)?openRows.delete(p):openRows.add(p); render(); }
+    else if(act==='clear'){
+      if(!confirm('Remove all travelers and expenses and start over?')) return;
+      state = {name:'New trip', currency:state.currency, rates:state.rates, view:state.view, people:[], expenses:[]};
+      editingId=null; form=blankForm(); openRows.clear(); persist(); render();
+    }
+    else if(act==='share') shareSummary();
+    else if(act==='backup') backup();
+    else if(act==='restore'){ const f = app.querySelector('#restoreFile'); if(f) f.click(); }
+    else if(act==='view'){ state.view = t.dataset.c; persist(); render(); }
+    else if(act==='rm-cur'){
+      const c = t.dataset.c, n = state.expenses.filter(x=>x.cur===c).length;
+      if(n){ flash('curMsg', n+' expense'+(n>1?'s are':' is')+' in '+c+'. Change or delete '+(n>1?'those':'it')+' first.'); return; }
+      delete state.rates[c]; if(state.view===c) state.view = state.currency; if(form.cur===c) form.cur = state.currency; if(state.lastCur===c) delete state.lastCur;
+      persist(); render();
+    }
+  });
+  app.addEventListener('keydown', e => {
+    if((e.key==='Enter'||e.key===' ') && e.target.matches('.exp,.bal-row')){ e.preventDefault(); e.target.click(); }
+  });
+
+  function note(text){ const el = document.getElementById('footMsg'); if(el) el.textContent = text; }
+
+  function summaryText(){
+    const {per, transfers} = compute();
+    const total = state.expenses.reduce((n,e)=>n+baseCents(e),0);
+    let t = state.name+'\n'+fmt(total)+' total\n\nBalances\n';
+    state.people.forEach(p => { const n = per[p].net;
+      t += p+': '+(n>0?'gets back '+fmt(n):n<0?'pays '+fmt(-n):'even')+'\n'; });
+    t += '\nSettle up\n';
+    t += transfers.length ? transfers.map(x => x.from+' pays '+x.to+' '+fmt(x.v)).join('\n') : 'Everyone is even.';
+    return t;
+  }
+  async function shareSummary(){
+    if(!state.expenses.length){ note('Add an expense first.'); return; }
+    const text = summaryText();
+    if(navigator.share){
+      try{ await navigator.share({title:state.name, text}); return; }
+      catch(e){ if(e && e.name==='AbortError') return; }
+    }
+    try{ await navigator.clipboard.writeText(text); note('Summary copied. Paste it into your group chat.'); }
+    catch(e){
+      const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select();
+      let ok = false; try{ ok = document.execCommand('copy'); }catch(_){} ta.remove();
+      note(ok ? 'Summary copied. Paste it into your group chat.' : 'Could not copy. Select and copy the balances by hand.');
+    }
+  }
+  async function backup(){
+    const name = (state.name||'trip').replace(/[^\w]+/g,'-').replace(/^-|-$/g,'') + '-backup.json';
+    const json = JSON.stringify(state, null, 2);
+    try{
+      const file = new File([json], name, {type:'application/json'});
+      if(navigator.canShare && navigator.canShare({files:[file]})){ await navigator.share({files:[file], title:name}); return; }
+    }catch(e){ if(e && e.name==='AbortError') return; }
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([json],{type:'application/json'}));
+    a.download = name; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(a.href), 2000);
+    note('Backup saved as '+name+'.');
+  }
+  function restore(input){
+    const f = input.files && input.files[0]; if(!f) return;
+    const r = new FileReader();
+    r.onload = () => {
+      let x = null; try{ x = normalize(JSON.parse(r.result)); }catch(e){}
+      if(!x){ note('That file is not a Trip Split backup.'); return; }
+      if(!confirm('Replace what is on this phone with "'+x.name+'" ('+x.expenses.length+' expenses)?')){ input.value=''; return; }
+      state = x; editingId = null; form = blankForm(); openRows.clear(); persist(); render(); note('Backup restored.');
+    };
+    r.onerror = () => note('Could not read that file.');
+    r.readAsText(f);
+  }
+
+  document.title = state.name || 'Trip Split';
+  render();
+  if('serviceWorker' in navigator && location.protocol.indexOf('http')===0){
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  }
+})();
+</script>
+</body>
+</html>
