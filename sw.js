@@ -1,6 +1,6 @@
 // Keeps the app working without internet (for example abroad without roaming).
 const CACHE = 'tripsplit-v3';
-const ASSETS = ['./', './index.html', './apple-touch-icon.png', './firebase-config.js'];
+const ASSETS = ['./', './index.html', './apple-touch-icon.png'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()));
 });
