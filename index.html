@@ -20,6 +20,7 @@
   --red:#D6402F; --blue:#0B2A4A; --pos:#1E7A3E; --neg:#C2372B; --tint:#E2EAF0;
   --brand:#0B2A4A; --on-brand:#FFFFFF; --hero:#0B2A4A; --accent:#7CF0C9; --on-accent:#07121D;
   --i-sand:#EFE9DF; --i-sky:#DDEBFB; --i-peach:#FDE6DA; --i-mint:#D9F5EA;
+  --s1:#0E7C66; --s1-bg:#E4F6EF; --s1-on:#FFFFFF; --s2:#1F5FBF; --s2-bg:#E4EEFB; --s2-on:#FFFFFF; --s3:#C2432A; --s3-bg:#FDEBE3; --s3-on:#FFFFFF;
   --display:"Inter", "Avenir Next", "Segoe UI", system-ui, -apple-system, sans-serif;
   --body:"Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
   box-sizing:border-box;
@@ -32,6 +33,7 @@
     --red:#F0705F; --blue:#7CF0C9; --pos:#5BD08A; --neg:#F0796E; --tint:#1B2E41;
     --brand:#7CF0C9; --on-brand:#07121D;
     --i-sand:#2B2A26; --i-sky:#1B2E4A; --i-peach:#3D2A22; --i-mint:#173B31;
+    --s1:#5FE0B8; --s1-bg:#12332B; --s1-on:#07121D; --s2:#8DB8FF; --s2-bg:#14294A; --s2-on:#07121D; --s3:#FF9E80; --s3-bg:#3A2118; --s3-on:#07121D;
   }
 }
 :root[data-theme="dark"]{
@@ -39,6 +41,7 @@
   --red:#F0705F; --blue:#7CF0C9; --pos:#5BD08A; --neg:#F0796E; --tint:#1B2E41;
   --brand:#7CF0C9; --on-brand:#07121D;
   --i-sand:#2B2A26; --i-sky:#1B2E4A; --i-peach:#3D2A22; --i-mint:#173B31;
+  --s1:#5FE0B8; --s1-bg:#12332B; --s1-on:#07121D; --s2:#8DB8FF; --s2-bg:#14294A; --s2-on:#07121D; --s3:#FF9E80; --s3-bg:#3A2118; --s3-on:#07121D;
 }
 html{scroll-padding-top:env(safe-area-inset-top,0px);-webkit-text-size-adjust:100%}
 button,.chip,.exp,.bal-row{touch-action:manipulation}
@@ -229,7 +232,7 @@ html.noscroll,html.noscroll body{overflow:hidden}
 .sheet-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 20px 0}
 .sheet-head h2{margin:0}
 .x-btn{width:40px;height:40px;border-radius:50%;border:0;background:var(--paper);color:var(--ink);font-size:24px;line-height:1;cursor:pointer}
-.sheet-body{overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:8px 20px calc(20px + env(safe-area-inset-bottom,0px))}
+.sheet-body{overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:8px 20px 0}
 .amt-big{display:flex;gap:8px;align-items:stretch}
 .cur-sel{flex:0 0 92px;width:92px;border:0;background:var(--paper);color:var(--ink);border-radius:16px;padding:0 10px;font-size:16px;font-weight:700}
 .amount-big{flex:1 1 auto;min-width:0;width:100%;border:0;background:var(--paper);color:var(--ink);border-radius:16px;padding:12px 16px;font-size:32px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
@@ -237,7 +240,9 @@ html.noscroll,html.noscroll body{overflow:hidden}
 .sh-in{display:block;width:100%;min-width:0;border:0;background:var(--paper);color:var(--ink);border-radius:14px;padding:12px 14px;font-size:16px;margin-top:10px}
 .split-head .sh-label{margin:14px 0 6px}
 .sheet .each{margin-top:6px}
-.sheet-actions{display:flex;gap:10px;margin-top:16px}
+.sheet-actions{display:flex;gap:10px;margin-top:6px}
+.sheet-foot{position:sticky;bottom:0;background:var(--card);padding:8px 0 calc(16px + env(safe-area-inset-bottom,0px));margin-top:4px;box-shadow:0 -10px 12px -8px var(--card)}
+.sheet-foot .msg{margin:0 0 4px;min-height:0}
 .sheet-actions .btn{flex:1;padding:14px 16px;font-size:16px}
 .msg.ok{color:var(--pos)}
 @keyframes sheetUp{from{transform:translate(-50%,48px);opacity:0}to{transform:translate(-50%,0);opacity:1}}
@@ -247,6 +252,20 @@ html.noscroll,html.noscroll body{overflow:hidden}
 .chip.on .x{color:var(--on-brand)}
 .rename-row{display:flex;gap:8px;align-items:center;margin-top:12px}
 .rename-row input{flex:1;min-width:0;border:1.5px solid var(--brand);border-radius:999px;padding:10px 16px;background:var(--card);color:var(--ink);font-size:16px}
+.sec{background:var(--sbg);border-radius:20px;padding:12px 14px 14px;margin-top:12px}
+.sec.s1{--sbg:var(--s1-bg);--sc:var(--s1);--son:var(--s1-on)}
+.sec.s2{--sbg:var(--s2-bg);--sc:var(--s2);--son:var(--s2-on)}
+.sec.s3{--sbg:var(--s3-bg);--sc:var(--s3);--son:var(--s3-on)}
+.sec-head{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.sec-num{flex:none;width:22px;height:22px;border-radius:50%;background:var(--sc);color:var(--son);display:grid;place-items:center;font-size:12px;font-weight:800}
+.sec-title{font-weight:700;font-size:14px}
+.sec-hint{margin-left:auto;font-size:12px;color:var(--muted)}
+.sec-links{margin-left:auto;display:flex;gap:10px}
+.sec .linkbtn{color:var(--sc);font-weight:700}
+.sec .pick{margin-top:0;gap:6px}
+.sec .pick .chip{background:var(--card);border-color:transparent;padding:8px 13px;min-height:38px}
+.sec .pick .chip[aria-pressed="true"]{background:var(--sc);border-color:var(--sc);color:var(--son)}
+.sec .sh-in{background:var(--card);margin-top:10px}
 @media (prefers-reduced-motion:no-preference){.sheet.enter{animation:sheetUp .22s ease-out}.scrim.enter{animation:fadeIn .2s ease-out}}
 @media (prefers-reduced-motion:no-preference){.bar i{transition:width .3s ease,left .3s ease}}
 </style>
@@ -256,7 +275,7 @@ html.noscroll,html.noscroll body{overflow:hidden}
 <div id="sheet-root"></div>
 <script id="app-script">
 (function(){
-  const APP_VERSION = 'v2.4', APP_DATE = '30 Sep 2026';   // keep in step with CACHE in sw.js
+  const APP_VERSION = 'v2.5', APP_DATE = '30 Sep 2026';   // keep in step with CACHE in sw.js
   const STORE_KEY = 'tripsplit:v1';
   const DEFAULT_STATE = {name:'Trip expenses', currency:'PHP', rates:{TWD:1.9}, view:'PHP', people:[], expenses:[]};
   const LEGACY = {airfare:'Flights',flight:'Flights',flights:'Flights',hotel:'Hotel',food:'Food',taxi:'Transport'};
@@ -727,18 +746,26 @@ html.noscroll,html.noscroll body{overflow:hidden}
           <input class="amount-big" data-ff="amount" value="${esc(form.amount)}" inputmode="decimal" placeholder="0.00" autocomplete="off" enterkeyhint="done" aria-label="Amount">
         </div>
         <div class="each" id="eachText">${eachText()}</div>
-        <div class="sh-label">Category</div>
-        <div class="pick">${cats().map(c=>`<button type="button" class="chip" data-act="scat" data-c="${esc(c)}" aria-pressed="${c===form.cat}">${esc(c)}</button>`).join('')}<button type="button" class="chip" data-act="scat" data-c="__new" aria-pressed="${form.cat==='__new'}">+ New</button></div>
-        ${form.cat==='__new' ? `<input class="sh-in" data-ff="catNew" value="${esc(form.catNew)}" placeholder="Tours, gifts, insurance" autocomplete="off" aria-label="New category name">` : ''}
-        <input class="sh-in" data-ff="desc" value="${esc(form.desc)}" placeholder="Details, optional (Din Tai Fung)" autocomplete="off" aria-label="Details">
-        <div class="sh-label">Paid by</div>
-        <div class="pick">${state.people.map(p=>`<button type="button" class="chip" data-act="spayer" data-p="${esc(p)}" aria-pressed="${p===form.payer}">${esc(p)}</button>`).join('')}</div>
-        <div class="split-head"><span class="sh-label">Split equally among</span><span><button type="button" class="linkbtn" data-act="all">Everyone</button> <button type="button" class="linkbtn" data-act="none">Clear</button></span></div>
-        <div class="pick">${state.people.map(p=>`<button type="button" class="chip" data-act="toggle" data-p="${esc(p)}" aria-pressed="${form.split.includes(p)}">${esc(p)}</button>`).join('')}</div>
-        <div class="msg${sheetOk?' ok':''}" id="formMsg" role="status">${esc(sheetMsg)}</div>
-        <div class="sheet-actions">
-          ${editingId ? `<button type="button" class="btn ghost" data-act="del-exp">Delete</button><button class="btn">Update</button>`
-                      : `<button type="button" class="btn ghost" data-act="save-more">Save &amp; add another</button><button class="btn">Save</button>`}
+        <div class="sec s1">
+          <div class="sec-head"><span class="sec-num">1</span><span class="sec-title">Category</span><span class="sec-hint">pick one</span></div>
+          <div class="pick">${cats().map(c=>`<button type="button" class="chip" data-act="scat" data-c="${esc(c)}" aria-pressed="${c===form.cat}">${esc(c)}</button>`).join('')}<button type="button" class="chip" data-act="scat" data-c="__new" aria-pressed="${form.cat==='__new'}">+ New</button></div>
+          ${form.cat==='__new' ? `<input class="sh-in" data-ff="catNew" value="${esc(form.catNew)}" placeholder="Tours, gifts, insurance" autocomplete="off" aria-label="New category name">` : ''}
+          <input class="sh-in" data-ff="desc" value="${esc(form.desc)}" placeholder="Details, optional (Din Tai Fung)" autocomplete="off" aria-label="Details">
+        </div>
+        <div class="sec s2">
+          <div class="sec-head"><span class="sec-num">2</span><span class="sec-title">Paid by</span><span class="sec-hint">pick one</span></div>
+          <div class="pick">${state.people.map(p=>`<button type="button" class="chip" data-act="spayer" data-p="${esc(p)}" aria-pressed="${p===form.payer}">${esc(p)}</button>`).join('')}</div>
+        </div>
+        <div class="sec s3">
+          <div class="sec-head"><span class="sec-num">3</span><span class="sec-title">Split among</span><span class="sec-links"><button type="button" class="linkbtn" data-act="all">Everyone</button> <button type="button" class="linkbtn" data-act="none">Clear</button></span></div>
+          <div class="pick">${state.people.map(p=>`<button type="button" class="chip" data-act="toggle" data-p="${esc(p)}" aria-pressed="${form.split.includes(p)}">${esc(p)}</button>`).join('')}</div>
+        </div>
+        <div class="sheet-foot">
+          <div class="msg${sheetOk?' ok':''}" id="formMsg" role="status">${esc(sheetMsg)}</div>
+          <div class="sheet-actions">
+            ${editingId ? `<button type="button" class="btn ghost" data-act="del-exp">Delete</button><button class="btn">Update</button>`
+                        : `<button type="button" class="btn ghost" data-act="save-more">Save &amp; add another</button><button class="btn">Save</button>`}
+          </div>
         </div>
       </form>`;
     }
