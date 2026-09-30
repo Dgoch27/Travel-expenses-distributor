@@ -272,6 +272,21 @@ html.noscroll,html.noscroll body{overflow:hidden}
   .wrap.wide section .card,.wrap.wide section .hint{max-width:640px}
   .wrap.wide section .card.matrix-card{max-width:none}
 }
+.ppl{display:grid;gap:10px}
+.pp{padding:14px 16px}
+.pp-head{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.pp-head b{font-size:16px;overflow-wrap:anywhere}
+.pp-tot{display:grid;justify-items:end;font-weight:800;font-size:18px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pp-tot .lbl{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.pp-none{color:var(--muted);font-size:14px}
+.pp-list{list-style:none;margin:8px 0 0;padding:0}
+.pp-list li{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-top:1px solid var(--line);font-variant-numeric:tabular-nums}
+.pp-list li:first-child{border-top:0}
+.pp-list li span:last-child{white-space:nowrap;font-weight:600}
+.pp-list.get li span:last-child{color:var(--pos)}
+.pp-sub{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-top:12px;padding-top:10px;border-top:2px solid var(--line);font-size:14px;color:var(--muted)}
+.pp-sub b{font-size:16px}
+@media (min-width:900px){.wrap.wide .ppl{grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}}
 @media (prefers-reduced-motion:no-preference){.sheet.enter{animation:sheetUp .22s ease-out}.scrim.enter{animation:fadeIn .2s ease-out}}
 @media (prefers-reduced-motion:no-preference){.bar i{transition:width .3s ease,left .3s ease}}
 </style>
@@ -281,7 +296,7 @@ html.noscroll,html.noscroll body{overflow:hidden}
 <div id="sheet-root"></div>
 <script id="app-script">
 (function(){
-  const APP_VERSION = 'v2.6', APP_DATE = '30 Sep 2026';   // keep in step with CACHE in sw.js
+  const APP_VERSION = 'v2.7', APP_DATE = '30 Sep 2026';   // keep in step with CACHE in sw.js
   const STORE_KEY = 'tripsplit:v1';
   const DEFAULT_STATE = {name:'Trip expenses', currency:'PHP', rates:{TWD:1.9}, view:'PHP', people:[], expenses:[]};
   const LEGACY = {airfare:'Flights',flight:'Flights',flights:'Flights',hotel:'Hotel',food:'Food',taxi:'Transport'};
@@ -427,6 +442,26 @@ html.noscroll,html.noscroll body{overflow:hidden}
         items: state.people.filter(p => p!==e.payer && (sh[p]||0)>0).map(p => ({from:p, to:e.payer, c:sh[p]}))};
     }).filter(g => g.items.length);
   }
+  function paymentsByPerson(){
+    const out = {}; state.people.forEach(p => out[p] = {pay:{}, get:{}, payTotal:0, getTotal:0});
+    directPayments().forEach(g => g.items.forEach(i => {
+      if(!out[i.from] || !out[i.to]) return;
+      out[i.from].pay[i.to] = (out[i.from].pay[i.to]||0) + i.c; out[i.from].payTotal += i.c;
+      out[i.to].get[i.from] = (out[i.to].get[i.from]||0) + i.c; out[i.to].getTotal += i.c;
+    }));
+    return out;
+  }
+  const byAmount = obj => Object.entries(obj).sort((a,b) => b[1]-a[1] || state.people.indexOf(a[0])-state.people.indexOf(b[0]));
+  function perPersonHtml(){
+    if(!state.expenses.length || !state.people.length) return '<div class="card empty">Nothing to settle yet.</div>';
+    const d = paymentsByPerson();
+    return `<div class="ppl">${state.people.map(p => {
+      const r = d[p], pays = byAmount(r.pay), gets = byAmount(r.get);
+      return `<div class="card pp"><div class="pp-head"><b>${esc(p)}</b>${r.payTotal ? `<span class="pp-tot"><span class="lbl">Total to pay</span>${fmt(r.payTotal)}</span>` : '<span class="pp-none">Nothing to pay</span>'}</div>
+        ${pays.length ? `<ul class="pp-list">${pays.map(([to,c]) => `<li><span>pays <b>${esc(to)}</b></span><span>${fmt(c)}</span></li>`).join('')}</ul>` : ''}
+        ${gets.length ? `<div class="pp-sub"><span>Receives in total</span><b class="pos">${fmt(r.getTotal)}</b></div><ul class="pp-list get">${gets.map(([fr,c]) => `<li><span>from <b>${esc(fr)}</b></span><span>${fmt(c)}</span></li>`).join('')}</ul>` : ''}
+      </div>`; }).join('')}</div>`;
+  }
   const payRow = (from, to, amtHtml) => `<li><span class="t-names"><b>${esc(from)}</b><span class="arrow">pays</span><b>${esc(to)}</b></span><span class="t-amt">${amtHtml}</span></li>`;
   function settleHtml(){
     if(!state.expenses.length) return '<div class="card empty">Nothing to settle yet.</div>';
@@ -554,7 +589,7 @@ html.noscroll,html.noscroll body{overflow:hidden}
 `,
       export: `      <section>
         <h2>Export</h2>
-        <p class="hint">The Excel file has sheets for the summary, expenses, categories, the overall table and who pays whom. It opens in Excel, Numbers and Google Sheets.</p>
+        <p class="hint">The Excel file has sheets for the summary, expenses, categories, the overall table, payments per person and per expense. It opens in Excel, Numbers and Google Sheets.</p>
         <div class="foot" style="margin-top:0">
           <button class="btn small" data-act="xlsx">Export to Excel</button>
           <button class="btn ghost small" data-act="tsv">Copy for Google Sheets</button>
@@ -565,6 +600,11 @@ html.noscroll,html.noscroll body{overflow:hidden}
 
 `
     };
+    P.perperson = `<section>
+        <h2>Payments per person</h2>
+        <p class="hint">What each person pays each payer, added up across all expenses. Nothing is netted off.</p>
+        ${perPersonHtml()}
+      </section>`;
     const tabTitle = (t, sub) => `<header class="top"><div class="ver">Trip Split ${APP_VERSION} <span>${APP_DATE}</span></div><h1 class="tab-title">${t}</h1><div class="sub">${esc(sub)}</div></header>`;
     const pillRow = curs().length>1 ? `<div class="pillrow"><div class="cpills light" role="group" aria-label="Show amounts in">${curs().map(c=>`<button class="cpill" data-act="view" data-c="${c}" aria-pressed="${c===viewCode()}">${c}</button>`).join('')}</div></div>` : '';
     const dataSection = `<section>
@@ -579,7 +619,7 @@ html.noscroll,html.noscroll body{overflow:hidden}
       </section>`;
     let body;
     if(tab==='people') body = tabTitle('Travellers', state.name) + P.people + pillRow + P.balance;
-    else if(tab==='reports') body = tabTitle('Reports', state.name) + pillRow + P.cats + P.overall + P.settle;
+    else if(tab==='reports') body = tabTitle('Reports', state.name) + pillRow + P.cats + P.overall + P.perperson + P.settle;
     else if(tab==='more') body = tabTitle('More', state.name) + P.currencies + P.export + dataSection;
     else body = P.header + P.hero + P.tiles + `<button class="add-big" data-act="add">${IC.plus}<span>Add expense</span></button>` + P.expenses;
     const tabBtn = (id, label, icon) => `<button class="tab" data-act="tab" data-t="${id}" aria-current="${tab===id?'page':'false'}"><span class="ti">${icon}</span><span>${label}</span></button>`;
@@ -867,6 +907,8 @@ html.noscroll,html.noscroll body{overflow:hidden}
     let t = state.name+'\n'+fmt(total)+' total\n\nBalances\n';
     state.people.forEach(p => { const n = per[p].net;
       t += p+': '+(n>0?'gets back '+fmt(n):n<0?'pays '+fmt(-n):'even')+'\n'; });
+    const pp = paymentsByPerson(), lines = state.people.filter(p => pp[p].payTotal).map(p => p+': pays '+byAmount(pp[p].pay).map(([to,c]) => to+' '+fmt(c)).join(', ')+' (total '+fmt(pp[p].payTotal)+')');
+    t += '\nPayments per person\n'+(lines.length ? lines.join('\n') : 'Nobody has to pay anyone.')+'\n';
     const g = directPayments();
     t += '\nWho pays whom, per expense\n';
     t += g.length ? g.map(x => x.title+' (paid by '+x.payer+')\n'+x.items.map(i => '  '+i.from+' pays '+i.to+' '+fmt(i.c)).join('\n')).join('\n\n') : 'Everyone only paid their own share.';
@@ -995,7 +1037,12 @@ html.noscroll,html.noscroll body{overflow:hidden}
     const direct = [[H('Expense'), H('From'), H('To'), H('Amount ('+cur+')')]];
     directPayments().forEach(g => g.items.forEach(i => direct.push([g.title, i.from, i.to, N(n(i.c))])));
     if(direct.length===1) direct.push(['Everyone only paid their own share','','','']);
-    return [{name:'Summary', rows:summary},{name:'Expenses', rows:expenses},{name:'By category', rows:cats},{name:'Who paid for what', rows:matrix},{name:'Direct payments', rows:direct}];
+    const pp = paymentsByPerson(), perPerson = [[H('Person'), H('Pays to'), H('Amount ('+cur+')')]];
+    state.people.forEach(p => { if(!pp[p].payTotal) return;
+      byAmount(pp[p].pay).forEach(([to,c]) => perPerson.push([p, to, N(n(c))]));
+      perPerson.push([B(p), B('Total'), NB(n(pp[p].payTotal))]); });
+    if(perPerson.length===1) perPerson.push(['Nobody has to pay anyone','','']);
+    return [{name:'Summary', rows:summary},{name:'Expenses', rows:expenses},{name:'By category', rows:cats},{name:'Who paid for what', rows:matrix},{name:'Payments per person', rows:perPerson},{name:'Direct payments', rows:direct}];
   }
   function exportXlsx(){
     if(!state.expenses.length){ note('Add an expense first.', 'exportMsg'); return; }
