@@ -139,13 +139,6 @@ table.grid{border-collapse:separate;border-spacing:0;width:100%;font-size:14px;f
 .grid tbody tr.ex-paid:first-child > *{border-top:0}
 .grid tbody tr.ex-div > *{border-top:1px dashed var(--line)}
 .grid tbody tr.ex-div th{font-weight:500;color:var(--muted)}
-.dp{border-top:1px solid var(--line)}
-.dp:first-child{border-top:0}
-.dp-head{padding:14px 16px 2px;display:grid;gap:1px}
-.dp-head span{color:var(--muted);font-size:13px}
-.dp .transfers li{padding:8px 16px;border-top:0}
-.dp .t-amt{font-size:17px}
-.dp .transfers{padding-bottom:6px}
 .gsub{display:block;color:var(--muted);font-size:12px;font-weight:400}
 .grid .z{color:var(--muted)}
 .foot{margin-top:40px;display:flex;gap:10px;flex-wrap:wrap}
@@ -287,6 +280,8 @@ html.noscroll,html.noscroll body{overflow:hidden}
 .pp-sub{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-top:12px;padding-top:10px;border-top:2px solid var(--line);font-size:14px;color:var(--muted)}
 .pp-sub b{font-size:16px}
 @media (min-width:900px){.wrap.wide .ppl{grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}}
+.pp-off{margin-top:12px;padding-top:10px;border-top:2px solid var(--line);font-size:13px;color:var(--muted);display:grid;gap:6px}
+.pp-off b{font-size:12px;text-transform:uppercase;letter-spacing:.06em}
 @media (prefers-reduced-motion:no-preference){.sheet.enter{animation:sheetUp .22s ease-out}.scrim.enter{animation:fadeIn .2s ease-out}}
 @media (prefers-reduced-motion:no-preference){.bar i{transition:width .3s ease,left .3s ease}}
 </style>
@@ -296,7 +291,7 @@ html.noscroll,html.noscroll body{overflow:hidden}
 <div id="sheet-root"></div>
 <script id="app-script">
 (function(){
-  const APP_VERSION = 'v2.7', APP_DATE = '30 Sep 2026';   // keep in step with CACHE in sw.js
+  const APP_VERSION = 'v2.9', APP_DATE = '30 Sep 2026';   // keep in step with CACHE in sw.js
   const STORE_KEY = 'tripsplit:v1';
   const DEFAULT_STATE = {name:'Trip expenses', currency:'PHP', rates:{TWD:1.9}, view:'PHP', people:[], expenses:[]};
   const LEGACY = {airfare:'Flights',flight:'Flights',flights:'Flights',hotel:'Hotel',food:'Food',taxi:'Transport'};
@@ -443,33 +438,33 @@ html.noscroll,html.noscroll body{overflow:hidden}
     }).filter(g => g.items.length);
   }
   function paymentsByPerson(){
-    const out = {}; state.people.forEach(p => out[p] = {pay:{}, get:{}, payTotal:0, getTotal:0});
-    directPayments().forEach(g => g.items.forEach(i => {
-      if(!out[i.from] || !out[i.to]) return;
-      out[i.from].pay[i.to] = (out[i.from].pay[i.to]||0) + i.c; out[i.from].payTotal += i.c;
-      out[i.to].get[i.from] = (out[i.to].get[i.from]||0) + i.c; out[i.to].getTotal += i.c;
+    const gross = {}; state.people.forEach(p => gross[p] = {});           // gross[a][b] = what a owes b, before offsetting
+    directPayments().forEach(g => g.items.forEach(i => { if(gross[i.from] && gross[i.to]) gross[i.from][i.to] = (gross[i.from][i.to]||0) + i.c; }));
+    const out = {}; state.people.forEach(p => out[p] = {pay:{}, get:{}, payTotal:0, getTotal:0, offsets:[]});
+    state.people.forEach(a => Object.entries(gross[a]).forEach(([b, owes]) => {
+      const back = (gross[b] && gross[b][a]) || 0;
+      if(back>0) out[a].offsets.push({with:b, owes, owed:back});
+      if(owes>back){ const net = owes-back; out[a].pay[b] = net; out[a].payTotal += net; out[b].get[a] = net; out[b].getTotal += net; }
     }));
-    return out;
+    return {out, gross};
   }
   const byAmount = obj => Object.entries(obj).sort((a,b) => b[1]-a[1] || state.people.indexOf(a[0])-state.people.indexOf(b[0]));
+  function offsetText(p, o){
+    const q = o.with, diff = Math.abs(o.owes-o.owed);
+    const net = o.owes===o.owed ? 'They cancel out, so nobody pays.' : (o.owes>o.owed ? esc(p)+' pays '+esc(q) : esc(q)+' pays '+esc(p))+' '+fmt(diff)+'.';
+    return `<div>With ${esc(q)}: ${esc(p)} owes ${fmt(o.owes)}, ${esc(q)} owes ${esc(p)} ${fmt(o.owed)}. ${net}</div>`;
+  }
   function perPersonHtml(){
     if(!state.expenses.length || !state.people.length) return '<div class="card empty">Nothing to settle yet.</div>';
-    const d = paymentsByPerson();
+    const d = paymentsByPerson().out;
     return `<div class="ppl">${state.people.map(p => {
       const r = d[p], pays = byAmount(r.pay), gets = byAmount(r.get);
       return `<div class="card pp"><div class="pp-head"><b>${esc(p)}</b>${r.payTotal ? `<span class="pp-tot"><span class="lbl">Total to pay</span>${fmt(r.payTotal)}</span>` : '<span class="pp-none">Nothing to pay</span>'}</div>
         ${pays.length ? `<ul class="pp-list">${pays.map(([to,c]) => `<li><span>pays <b>${esc(to)}</b></span><span>${fmt(c)}</span></li>`).join('')}</ul>` : ''}
         ${gets.length ? `<div class="pp-sub"><span>Receives in total</span><b class="pos">${fmt(r.getTotal)}</b></div><ul class="pp-list get">${gets.map(([fr,c]) => `<li><span>from <b>${esc(fr)}</b></span><span>${fmt(c)}</span></li>`).join('')}</ul>` : ''}
+        ${r.offsets.length ? `<div class="pp-off"><b>Offset</b>${r.offsets.map(o => offsetText(p,o)).join('')}</div>` : ''}
       </div>`; }).join('')}</div>`;
   }
-  const payRow = (from, to, amtHtml) => `<li><span class="t-names"><b>${esc(from)}</b><span class="arrow">pays</span><b>${esc(to)}</b></span><span class="t-amt">${amtHtml}</span></li>`;
-  function settleHtml(){
-    if(!state.expenses.length) return '<div class="card empty">Nothing to settle yet.</div>';
-    const g = directPayments();
-    if(!g.length) return '<div class="card empty">Everyone only paid their own share.</div>';
-    return `<div class="card">${g.map(x=>`<div class="dp"><div class="dp-head"><b>${esc(x.title)}</b><span>Paid by ${esc(x.payer)}, ${esc(x.orig)}</span></div><ul class="transfers">${x.items.map(i=>payRow(i.from,i.to,fmt(i.c))).join('')}</ul></div>`).join('')}</div>`;
-  }
-
   function render(){
     const {per} = compute();
     const total = state.expenses.reduce((s,e)=>s+baseCents(e),0);
@@ -580,16 +575,9 @@ html.noscroll,html.noscroll body{overflow:hidden}
       </section>
 
 `,
-      settle: `      <section>
-        <h2>Settle up</h2>
-        <p class="hint">Each person pays the payer their share of that expense. Nothing is netted off.</p>
-        ${settleHtml()}
-      </section>
-
-`,
       export: `      <section>
         <h2>Export</h2>
-        <p class="hint">The Excel file has sheets for the summary, expenses, categories, the overall table, payments per person and per expense. It opens in Excel, Numbers and Google Sheets.</p>
+        <p class="hint">The Excel file has sheets for the summary, expenses, categories, the overall table, payments per person, the offset details and the payments per expense. It opens in Excel, Numbers and Google Sheets.</p>
         <div class="foot" style="margin-top:0">
           <button class="btn small" data-act="xlsx">Export to Excel</button>
           <button class="btn ghost small" data-act="tsv">Copy for Google Sheets</button>
@@ -602,7 +590,7 @@ html.noscroll,html.noscroll body{overflow:hidden}
     };
     P.perperson = `<section>
         <h2>Payments per person</h2>
-        <p class="hint">What each person pays each payer, added up across all expenses. Nothing is netted off.</p>
+        <p class="hint">What each person pays each other person. When two people owe each other, the amounts are offset and only the difference is paid. The "Who paid for what" table above shows where each amount comes from.</p>
         ${perPersonHtml()}
       </section>`;
     const tabTitle = (t, sub) => `<header class="top"><div class="ver">Trip Split ${APP_VERSION} <span>${APP_DATE}</span></div><h1 class="tab-title">${t}</h1><div class="sub">${esc(sub)}</div></header>`;
@@ -619,7 +607,7 @@ html.noscroll,html.noscroll body{overflow:hidden}
       </section>`;
     let body;
     if(tab==='people') body = tabTitle('Travellers', state.name) + P.people + pillRow + P.balance;
-    else if(tab==='reports') body = tabTitle('Reports', state.name) + pillRow + P.cats + P.overall + P.perperson + P.settle;
+    else if(tab==='reports') body = tabTitle('Reports', state.name) + pillRow + P.cats + P.overall + P.perperson;
     else if(tab==='more') body = tabTitle('More', state.name) + P.currencies + P.export + dataSection;
     else body = P.header + P.hero + P.tiles + `<button class="add-big" data-act="add">${IC.plus}<span>Add expense</span></button>` + P.expenses;
     const tabBtn = (id, label, icon) => `<button class="tab" data-act="tab" data-t="${id}" aria-current="${tab===id?'page':'false'}"><span class="ti">${icon}</span><span>${label}</span></button>`;
@@ -907,10 +895,10 @@ html.noscroll,html.noscroll body{overflow:hidden}
     let t = state.name+'\n'+fmt(total)+' total\n\nBalances\n';
     state.people.forEach(p => { const n = per[p].net;
       t += p+': '+(n>0?'gets back '+fmt(n):n<0?'pays '+fmt(-n):'even')+'\n'; });
-    const pp = paymentsByPerson(), lines = state.people.filter(p => pp[p].payTotal).map(p => p+': pays '+byAmount(pp[p].pay).map(([to,c]) => to+' '+fmt(c)).join(', ')+' (total '+fmt(pp[p].payTotal)+')');
+    const pp = paymentsByPerson().out, lines = state.people.filter(p => pp[p].payTotal).map(p => p+': pays '+byAmount(pp[p].pay).map(([to,c]) => to+' '+fmt(c)).join(', ')+' (total '+fmt(pp[p].payTotal)+')');
     t += '\nPayments per person\n'+(lines.length ? lines.join('\n') : 'Nobody has to pay anyone.')+'\n';
     const g = directPayments();
-    t += '\nWho pays whom, per expense\n';
+    t += '\nDetailed payments per expense (before offsetting)\n';
     t += g.length ? g.map(x => x.title+' (paid by '+x.payer+')\n'+x.items.map(i => '  '+i.from+' pays '+i.to+' '+fmt(i.c)).join('\n')).join('\n\n') : 'Everyone only paid their own share.';
     return t;
   }
@@ -1037,12 +1025,21 @@ html.noscroll,html.noscroll body{overflow:hidden}
     const direct = [[H('Expense'), H('From'), H('To'), H('Amount ('+cur+')')]];
     directPayments().forEach(g => g.items.forEach(i => direct.push([g.title, i.from, i.to, N(n(i.c))])));
     if(direct.length===1) direct.push(['Everyone only paid their own share','','','']);
-    const pp = paymentsByPerson(), perPerson = [[H('Person'), H('Pays to'), H('Amount ('+cur+')')]];
-    state.people.forEach(p => { if(!pp[p].payTotal) return;
-      byAmount(pp[p].pay).forEach(([to,c]) => perPerson.push([p, to, N(n(c))]));
-      perPerson.push([B(p), B('Total'), NB(n(pp[p].payTotal))]); });
-    if(perPerson.length===1) perPerson.push(['Nobody has to pay anyone','','']);
-    return [{name:'Summary', rows:summary},{name:'Expenses', rows:expenses},{name:'By category', rows:cats},{name:'Who paid for what', rows:matrix},{name:'Payments per person', rows:perPerson},{name:'Direct payments', rows:direct}];
+    const {out:pp, gross} = paymentsByPerson();
+    const perPerson = [[H('Person / pays to'), H('Amount ('+cur+')'), H('Total ('+cur+')')]];
+    state.people.forEach(p => { const r = pp[p]; if(!r.payTotal) return;
+      perPerson.push([H(p), H(''), H('')]);
+      byAmount(r.pay).forEach(([to,c]) => perPerson.push(['   '+to, N(n(c))]));
+      perPerson.push([B('   Total'), '', NB(n(r.payTotal))]);
+      perPerson.push([]); });
+    if(perPerson.length===1) perPerson.push(['Nobody has to pay anyone']);
+    const offset = [[H('Person'), H('Pays to'), H('Owed before offset ('+cur+')'), H('Offset ('+cur+')'), H('Net to pay ('+cur+')')]];
+    state.people.forEach(a => { const list = byAmount(gross[a]); if(!list.length) return;
+      list.forEach(([b2,owes]) => { const back = (gross[b2] && gross[b2][a]) || 0, off = Math.min(owes, back);
+        offset.push([a, b2, N(n(owes)), N(n(off)), N(n(owes>back ? owes-back : 0))]); });
+      offset.push([]); });
+    if(offset.length===1) offset.push(['Nobody owes anyone']);
+    return [{name:'Summary', rows:summary},{name:'Expenses', rows:expenses},{name:'By category', rows:cats},{name:'Who paid for what', rows:matrix},{name:'Payments per person', rows:perPerson},{name:'Offset details', rows:offset},{name:'Direct payments', rows:direct}];
   }
   function exportXlsx(){
     if(!state.expenses.length){ note('Add an expense first.', 'exportMsg'); return; }
