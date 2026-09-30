@@ -242,6 +242,11 @@ html.noscroll,html.noscroll body{overflow:hidden}
 .msg.ok{color:var(--pos)}
 @keyframes sheetUp{from{transform:translate(-50%,48px);opacity:0}to{transform:translate(-50%,0);opacity:1}}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.chip-name{border:0;background:transparent;font:inherit;color:inherit;padding:6px 2px 6px 0;cursor:pointer}
+.chip.on{background:var(--brand);color:var(--on-brand)}
+.chip.on .x{color:var(--on-brand)}
+.rename-row{display:flex;gap:8px;align-items:center;margin-top:12px}
+.rename-row input{flex:1;min-width:0;border:1.5px solid var(--brand);border-radius:999px;padding:10px 16px;background:var(--card);color:var(--ink);font-size:16px}
 @media (prefers-reduced-motion:no-preference){.sheet.enter{animation:sheetUp .22s ease-out}.scrim.enter{animation:fadeIn .2s ease-out}}
 @media (prefers-reduced-motion:no-preference){.bar i{transition:width .3s ease,left .3s ease}}
 </style>
@@ -251,7 +256,7 @@ html.noscroll,html.noscroll body{overflow:hidden}
 <div id="sheet-root"></div>
 <script id="app-script">
 (function(){
-  const APP_VERSION = 'v2.3', APP_DATE = '30 Sep 2026';   // keep in step with CACHE in sw.js
+  const APP_VERSION = 'v2.4', APP_DATE = '30 Sep 2026';   // keep in step with CACHE in sw.js
   const STORE_KEY = 'tripsplit:v1';
   const DEFAULT_STATE = {name:'Trip expenses', currency:'PHP', rates:{TWD:1.9}, view:'PHP', people:[], expenses:[]};
   const LEGACY = {airfare:'Flights',flight:'Flights',flights:'Flights',hotel:'Hotel',food:'Food',taxi:'Transport'};
@@ -278,6 +283,7 @@ html.noscroll,html.noscroll body{overflow:hidden}
   const ALL_CURS = ['PHP','TWD','USD','JPY','KRW','HKD','SGD','THB','VND','CNY','EUR','AUD','GBP'];
   const readOnly = false;
   let tab = 'home';
+  let renaming = null, renameDraft = '';
   let editingId = null, openRows = new Set(), peopleMsg = '';
   let form = blankForm();
 
@@ -443,11 +449,12 @@ html.noscroll,html.noscroll body{overflow:hidden}
 `,
       people: `      <section>
         <h2>Who's going</h2>
-        <p class="hint">Everyone who might pay or share a cost.</p>
+        <p class="hint">Everyone who might pay or share a cost. Tap a name to rename it.</p>
         <div class="people">
-          ${state.people.map(p=>`<span class="chip" tabindex="-1">${esc(p)}${readOnly?'':`<button class="x" data-act="rm-person" data-p="${esc(p)}" aria-label="Remove ${esc(p)}">×</button>`}</span>`).join('')}
+          ${state.people.map(p=>`<span class="chip${p===renaming?' on':''}" tabindex="-1"><button type="button" class="chip-name" data-act="rename-person" data-p="${esc(p)}" aria-label="Rename ${esc(p)}">${esc(p)}</button>${readOnly?'':`<button class="x" data-act="rm-person" data-p="${esc(p)}" aria-label="Remove ${esc(p)}">×</button>`}</span>`).join('')}
           ${readOnly?'':`<form class="add-person" data-form="person"><input name="p" placeholder="Add a name" aria-label="Add a traveller" autocomplete="off"><button class="btn small ghost">Add</button></form>`}
         </div>
+        ${renaming!==null ? `<form class="rename-row" data-form="rename"><input name="n" value="${esc(renameDraft)}" aria-label="New name for ${esc(renaming)}" autocomplete="off" enterkeyhint="done"><button class="btn small">Save</button><button type="button" class="btn small ghost" data-act="rename-cancel">Cancel</button></form>` : ''}
         <div class="msg" role="status">${esc(peopleMsg)}</div>
       </section>
 
@@ -564,6 +571,7 @@ html.noscroll,html.noscroll body{overflow:hidden}
 
   app.addEventListener('input', e => {
     const t = e.target;
+    if(t.name==='n' && t.closest('[data-form="rename"]')) renameDraft = t.value;
     if(t.dataset.rate){ const v = parseFloat(t.value); if(v>0){ state.rates[t.dataset.rate] = v; persist(); refreshKeepFocus(t); } }
     if(t.dataset.f==='name'){ state.name = t.value; persist(); document.title = t.value || 'Trip Split'; updateSaveBar(); }
   });
@@ -608,6 +616,13 @@ html.noscroll,html.noscroll body{overflow:hidden}
   app.addEventListener('submit', e => {
     e.preventDefault();
     const f = e.target.dataset.form;
+    if(f==='rename'){
+      const nn = e.target.n.value.trim(); renameDraft = e.target.n.value;
+      if(!nn){ peopleMsg = 'Type a name.'; render(); focusRename(); return; }
+      if(nn===renaming){ renaming = null; peopleMsg = ''; render(); return; }
+      if(state.people.some(p => p!==renaming && p.toLowerCase()===nn.toLowerCase())){ peopleMsg = nn+' is already on the list.'; render(); focusRename(); return; }
+      renamePerson(renaming, nn); renaming = null; peopleMsg = ''; persist(); render(); return;
+    }
     if(f==='person'){
       const name = e.target.p.value.trim();
       peopleMsg = '';
@@ -626,6 +641,7 @@ html.noscroll,html.noscroll body{overflow:hidden}
     const act = t.dataset.act, p = t.dataset.p;
     if(act==='rm-person'){
       e.stopPropagation();
+      if(renaming===p) renaming = null;
       const n = state.expenses.filter(x=>x.payer===p || x.split.includes(p)).length;
       if(n){ peopleMsg = p+' is in '+n+' expense'+(n>1?'s':'')+'. Edit or delete those first.'; render(); return; }
       state.people = state.people.filter(x=>x!==p); form.split = form.split.filter(x=>x!==p); if(state.lastPayer===p) delete state.lastPayer;
@@ -633,6 +649,8 @@ html.noscroll,html.noscroll body{overflow:hidden}
     }
     else if(act==='edit' && !readOnly) openSheet(t.dataset.id);
     else if(act==='add') openSheet();
+    else if(act==='rename-person'){ renaming = p; renameDraft = p; peopleMsg = ''; render(); focusRename(); }
+    else if(act==='rename-cancel'){ renaming = null; peopleMsg = ''; render(); }
     else if(act==='row'){ openRows.has(p)?openRows.delete(p):openRows.add(p); render(); }
     else if(act==='clear'){
       if(!confirm('Remove all travellers and expenses and start over?')) return;
@@ -640,7 +658,7 @@ html.noscroll,html.noscroll body{overflow:hidden}
       editingId=null; form=blankForm(); openRows.clear(); persist(); render();
     }
     else if(act==='share') shareSummary();
-    else if(act==='tab'){ if(tab===t.dataset.t){ window.scrollTo({top:0,behavior:'smooth'}); return; } tab = t.dataset.t; render(); window.scrollTo(0,0); }
+    else if(act==='tab'){ if(tab===t.dataset.t){ window.scrollTo({top:0,behavior:'smooth'}); return; } tab = t.dataset.t; renaming = null; peopleMsg = ''; render(); window.scrollTo(0,0); }
     else if(act==='xlsx') exportXlsx();
     else if(act==='tsv') copyForSheets();
     else if(act==='backup') backup();
@@ -654,8 +672,20 @@ html.noscroll,html.noscroll body{overflow:hidden}
     }
   });
   app.addEventListener('keydown', e => {
+    if(e.key==='Escape' && renaming!==null){ renaming = null; peopleMsg = ''; render(); return; }
     if((e.key==='Enter'||e.key===' ') && e.target.matches('.exp,.bal-row')){ e.preventDefault(); e.target.click(); }
   });
+
+  // ---- rename a traveller everywhere they appear
+  function renamePerson(oldName, newName){
+    const sw = p => p===oldName ? newName : p;
+    state.people = state.people.map(sw);
+    state.expenses.forEach(e => { e.payer = sw(e.payer); e.split = e.split.map(sw); });
+    if(state.lastPayer===oldName) state.lastPayer = newName;
+    form.split = form.split.map(sw); form.payer = sw(form.payer);
+    if(openRows.has(oldName)){ openRows.delete(oldName); openRows.add(newName); }
+  }
+  function focusRename(){ const i = app.querySelector('.rename-row input'); if(i){ i.focus(); i.select(); } }
 
   // ---- quick-add sheet: amount first, remembers payer / category / currency
   const sheetRoot = document.getElementById('sheet-root');
