@@ -141,17 +141,10 @@ table.grid{border-collapse:separate;border-spacing:0;width:100%;font-size:14px;f
 .grid.fit th:last-child,.grid.fit td:last-child{padding-right:14px}
 @media (max-width:400px){.grid.fit{font-size:13px}.grid.fit th,.grid.fit td{padding:10px 5px}.grid.fit th:first-child{padding-left:12px}.grid.fit th:last-child,.grid.fit td:last-child{padding-right:12px}}
 @media (max-width:340px){.grid.fit{font-size:12px}.grid.fit th,.grid.fit td{padding:10px 4px}}
-.eb{padding:14px 16px;border-top:1px solid var(--line)}
-.eb:first-child{border-top:0}
-.eb-top{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
-.eb-top b{min-width:0;overflow-wrap:anywhere}
-.eb-amt{font-family:var(--display);font-weight:800;font-size:19px;font-variant-numeric:tabular-nums;white-space:nowrap}
-.eb-sub{color:var(--muted);font-size:13px;margin:2px 0 10px}
-.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px}
-.pc{display:grid;gap:1px;min-width:0;border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--paper)}
-.pn{color:var(--muted);font-size:13px;overflow-wrap:anywhere}
-.pv{font-family:var(--display);font-weight:700;font-size:16px;font-variant-numeric:tabular-nums}
-.pv.z{color:var(--muted)}
+.grid tbody tr.ex-paid > *{border-top:2px solid var(--line)}
+.grid tbody tr.ex-paid:first-child > *{border-top:0}
+.grid tbody tr.ex-div > *{border-top:1px dashed var(--line)}
+.grid tbody tr.ex-div th{font-weight:500;color:var(--muted)}
 .dp{border-top:1px solid var(--line)}
 .dp:first-child{border-top:0}
 .dp-head{padding:14px 16px 2px;display:grid;gap:1px}
@@ -194,7 +187,7 @@ label.f .amt-row input{flex:1 1 auto;width:auto;min-width:0}
 <div id="app" class="wrap"></div>
 <script id="app-script">
 (function(){
-  const APP_VERSION = 'v6', APP_DATE = '30 Sep 2026';   // keep in step with CACHE in sw.js
+  const APP_VERSION = 'v7', APP_DATE = '30 Sep 2026';   // keep in step with CACHE in sw.js
   const STORE_KEY = 'tripsplit:v1';
   const DEFAULT_STATE = {name:'Trip expenses', currency:'PHP', rates:{TWD:1.9}, view:'PHP', people:[], expenses:[]};
   const LEGACY = {airfare:'Flights',flight:'Flights',flights:'Flights',hotel:'Hotel',food:'Food',taxi:'Transport'};
@@ -284,7 +277,7 @@ label.f .amt-row input{flex:1 1 auto;width:auto;min-width:0}
     const rows = state.expenses.map(e => {
       const sh = shares(e), cents = baseCents(e);
       return {label:title(e), sub:'Paid by '+e.payer+', '+origTxt(e), orig:origTxt(e), cur:e.cur, payer:e.payer, amount:toNum(cents), paid:cents, shares:sh, n:e.split.length,
-              cells: people.map(p => sh[p]||0)};
+              paidCells: people.map(p => p===e.payer ? cents : 0), shareCells: people.map(p => sh[p]||0)};
     });
     return {per, people, rows};
   }
@@ -295,18 +288,18 @@ label.f .amt-row input{flex:1 1 auto;width:auto;min-width:0}
     const summary = `<div class="tbl-wrap"><table class="grid fit"><thead><tr><th>Person</th><th>Paid</th><th>Share</th><th>Net</th></tr></thead>
       <tbody>${people.map(p=>`<tr><th scope="row">${esc(p)}</th><td>${nf0(per[p].paid)}</td><td>${nf0(per[p].owe)}</td><td class="${tone0(per[p].net)}">${sgn0(per[p].net)}</td></tr>`).join('')}</tbody>
       <tfoot><tr><th scope="row">Total</th><td>${nf0(tot('paid'))}</td><td>${nf0(tot('owe'))}</td><td>${sgn0(tot('net'))}</td></tr></tfoot></table></div>`;
-    const blocks = rows.map(r => {
-      const foreign = r.cur!==viewCode() ? ' ('+esc(r.orig)+')' : '';
-      const cell = p => { const sh = r.shares[p]||0;
-        return `<div class="pc"><span class="pn">${esc(p)}</span><span class="pv${sh?'':' z'}">${sh?nf(sh):'–'}</span></div>`; };
-      return `<div class="eb"><div class="eb-top"><b>${esc(r.label)}</b><span class="eb-amt">${fmt(r.paid)}</span></div>
-        <div class="eb-sub">Paid by ${esc(r.payer)}${foreign}. Divided by ${r.n}, ${fmt(Math.round(r.paid/r.n))} each.</div>
-        <div class="pgrid">${people.map(cell).join('')}</div></div>`;
-    }).join('');
+    const matrix = `<div class="tbl-wrap"><table class="grid"><thead><tr><th>Expense</th>${people.map(p=>`<th>${esc(p)}</th>`).join('')}</tr></thead>
+      <tbody>${rows.map(r=>`<tr class="ex-paid"><th scope="row">${esc(r.label)}<span class="gsub">${esc(r.sub)}</span></th>${r.paidCells.map(c=>`<td class="${tone(c)}">${sgn(c)}</td>`).join('')}</tr>
+        <tr class="ex-div"><th scope="row">Divided by ${r.n}<span class="gsub">${fmt(Math.round(r.paid/r.n))} each</span></th>${r.shareCells.map(c=>`<td class="${tone(-c)}">${sgn(-c)}</td>`).join('')}</tr>`).join('')}</tbody>
+      <tfoot>
+        <tr><th scope="row">Paid</th>${people.map(p=>`<td>${nf(per[p].paid)}</td>`).join('')}</tr>
+        <tr><th scope="row">Share of costs</th>${people.map(p=>`<td>${nf(per[p].owe)}</td>`).join('')}</tr>
+        <tr><th scope="row">Net</th>${people.map(p=>`<td class="${tone(per[p].net)}">${sgn(per[p].net)}</td>`).join('')}</tr>
+      </tfoot></table></div>`;
     return `<div class="card">${summary}</div>
       <h3 class="h3">Who paid for what</h3>
-      <p class="hint">The full amount paid is at the top of each expense. Each box is that person's share of it, including the person who paid.</p>
-      <div class="card">${blocks}</div>`;
+      <p class="hint">Each expense has two lines: what was paid, then how it is divided, including the payer's own share. Every column adds up to that person's net. Swipe sideways to see everyone.</p>
+      <div class="card">${matrix}</div>`;
   }
 
   // Direct payments: each person pays the payer their share of that expense. Nothing is netted off.
@@ -635,7 +628,7 @@ label.f .amt-row input{flex:1 1 auto;width:auto;min-width:0}
     if(!state.expenses.length){ note('Add an expense first.', 'exportMsg'); return; }
     const d = tableData(), cur = viewCode(), f = c => toNum(c).toFixed(2);
     const lines = [['Expense','Paid by','Amount paid ('+cur+')', ...d.people]];
-    d.rows.forEach(r => lines.push([r.label, r.payer, r.amount.toFixed(2), ...r.cells.map(f)]));
+    d.rows.forEach(r => { lines.push([r.label, r.payer, r.amount.toFixed(2), ...r.paidCells.map(f)]); lines.push(['Divided by '+r.n, '', '', ...r.shareCells.map(c=>f(-c))]); });
     lines.push(['Paid','','', ...d.people.map(p=>f(d.per[p].paid))]);
     lines.push(['Share of costs','','', ...d.people.map(p=>f(d.per[p].owe))]);
     lines.push(['Net','','', ...d.people.map(p=>f(d.per[p].net))]);
@@ -732,7 +725,8 @@ label.f .amt-row input{flex:1 1 auto;width:auto;min-width:0}
       ...Object.entries(byCat).sort((a,b)=>b[1]-a[1]).map(([c,v]) => [c, N(n(v)), {v:total?+(v/total).toFixed(4):0, s:5}]),
       [B('Total'), NB(n(total))]];
     const matrix = [[H('Expense'), H('Paid by'), H('Amount paid ('+cur+')'), ...people.map(H)],
-      ...rows.map(r => [r.label, r.payer, N(r.amount), ...r.cells.map(c=>N(n(c)))]),
+      ...rows.flatMap(r => [[r.label, r.payer, N(r.amount), ...r.paidCells.map(c=>N(n(c)))],
+                            ['Divided by '+r.n, '', '', ...r.shareCells.map(c=>N(-n(c)))]]),
       [B('Paid'),'','', ...people.map(p=>NB(n(per[p].paid)))],
       [B('Share of costs'),'','', ...people.map(p=>NB(n(per[p].owe)))],
       [B('Net (+ gets back)'),'','', ...people.map(p=>NB(n(per[p].net)))]];
