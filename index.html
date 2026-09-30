@@ -266,6 +266,12 @@ html.noscroll,html.noscroll body{overflow:hidden}
 .sec .pick .chip{background:var(--card);border-color:transparent;padding:8px 13px;min-height:38px}
 .sec .pick .chip[aria-pressed="true"]{background:var(--sc);border-color:var(--sc);color:var(--son)}
 .sec .sh-in{background:var(--card);margin-top:10px}
+@media (min-width:900px){
+  .wrap.wide{max-width:min(1400px,96vw)}
+  .wrap.wide .matrix-card .grid th,.wrap.wide .matrix-card .grid td{padding:10px 9px}
+  .wrap.wide section .card,.wrap.wide section .hint{max-width:640px}
+  .wrap.wide section .card.matrix-card{max-width:none}
+}
 @media (prefers-reduced-motion:no-preference){.sheet.enter{animation:sheetUp .22s ease-out}.scrim.enter{animation:fadeIn .2s ease-out}}
 @media (prefers-reduced-motion:no-preference){.bar i{transition:width .3s ease,left .3s ease}}
 </style>
@@ -275,7 +281,7 @@ html.noscroll,html.noscroll body{overflow:hidden}
 <div id="sheet-root"></div>
 <script id="app-script">
 (function(){
-  const APP_VERSION = 'v2.5', APP_DATE = '30 Sep 2026';   // keep in step with CACHE in sw.js
+  const APP_VERSION = 'v2.6', APP_DATE = '30 Sep 2026';   // keep in step with CACHE in sw.js
   const STORE_KEY = 'tripsplit:v1';
   const DEFAULT_STATE = {name:'Trip expenses', currency:'PHP', rates:{TWD:1.9}, view:'PHP', people:[], expenses:[]};
   const LEGACY = {airfare:'Flights',flight:'Flights',flights:'Flights',hotel:'Hotel',food:'Food',taxi:'Transport'};
@@ -410,7 +416,7 @@ html.noscroll,html.noscroll body{overflow:hidden}
     return `<div class="card">${summary}</div>
       <h3 class="h3">Who paid for what</h3>
       <p class="hint">Each expense has two lines: what was paid, then how it is divided, including the payer's own share. Every column adds up to that person's net. Swipe sideways to see everyone.</p>
-      <div class="card">${matrix}</div>`;
+      <div class="card matrix-card">${matrix}</div>`;
   }
 
   // Direct payments: each person pays the payer their share of that expense. Nothing is netted off.
@@ -577,6 +583,7 @@ html.noscroll,html.noscroll body{overflow:hidden}
     else if(tab==='more') body = tabTitle('More', state.name) + P.currencies + P.export + dataSection;
     else body = P.header + P.hero + P.tiles + `<button class="add-big" data-act="add">${IC.plus}<span>Add expense</span></button>` + P.expenses;
     const tabBtn = (id, label, icon) => `<button class="tab" data-act="tab" data-t="${id}" aria-current="${tab===id?'page':'false'}"><span class="ti">${icon}</span><span>${label}</span></button>`;
+    app.classList.toggle('wide', tab==='reports');
     app.innerHTML = body + `
       <nav class="tabbar" aria-label="Main">
         ${tabBtn('home','Home',IC.home)}
