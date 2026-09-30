@@ -139,13 +139,6 @@ table.grid{border-collapse:separate;border-spacing:0;width:100%;font-size:14px;f
 .grid tbody tr.ex-paid:first-child > *{border-top:0}
 .grid tbody tr.ex-div > *{border-top:1px dashed var(--line)}
 .grid tbody tr.ex-div th{font-weight:500;color:var(--muted)}
-.dp{border-top:1px solid var(--line)}
-.dp:first-child{border-top:0}
-.dp-head{padding:14px 16px 2px;display:grid;gap:1px}
-.dp-head span{color:var(--muted);font-size:13px}
-.dp .transfers li{padding:8px 16px;border-top:0}
-.dp .t-amt{font-size:17px}
-.dp .transfers{padding-bottom:6px}
 .gsub{display:block;color:var(--muted);font-size:12px;font-weight:400}
 .grid .z{color:var(--muted)}
 .foot{margin-top:40px;display:flex;gap:10px;flex-wrap:wrap}
@@ -298,7 +291,7 @@ html.noscroll,html.noscroll body{overflow:hidden}
 <div id="sheet-root"></div>
 <script id="app-script">
 (function(){
-  const APP_VERSION = 'v2.8', APP_DATE = '30 Sep 2026';   // keep in step with CACHE in sw.js
+  const APP_VERSION = 'v2.9', APP_DATE = '30 Sep 2026';   // keep in step with CACHE in sw.js
   const STORE_KEY = 'tripsplit:v1';
   const DEFAULT_STATE = {name:'Trip expenses', currency:'PHP', rates:{TWD:1.9}, view:'PHP', people:[], expenses:[]};
   const LEGACY = {airfare:'Flights',flight:'Flights',flights:'Flights',hotel:'Hotel',food:'Food',taxi:'Transport'};
@@ -472,14 +465,6 @@ html.noscroll,html.noscroll body{overflow:hidden}
         ${r.offsets.length ? `<div class="pp-off"><b>Offset</b>${r.offsets.map(o => offsetText(p,o)).join('')}</div>` : ''}
       </div>`; }).join('')}</div>`;
   }
-  const payRow = (from, to, amtHtml) => `<li><span class="t-names"><b>${esc(from)}</b><span class="arrow">pays</span><b>${esc(to)}</b></span><span class="t-amt">${amtHtml}</span></li>`;
-  function settleHtml(){
-    if(!state.expenses.length) return '<div class="card empty">Nothing to settle yet.</div>';
-    const g = directPayments();
-    if(!g.length) return '<div class="card empty">Everyone only paid their own share.</div>';
-    return `<div class="card">${g.map(x=>`<div class="dp"><div class="dp-head"><b>${esc(x.title)}</b><span>Paid by ${esc(x.payer)}, ${esc(x.orig)}</span></div><ul class="transfers">${x.items.map(i=>payRow(i.from,i.to,fmt(i.c))).join('')}</ul></div>`).join('')}</div>`;
-  }
-
   function render(){
     const {per} = compute();
     const total = state.expenses.reduce((s,e)=>s+baseCents(e),0);
@@ -590,13 +575,6 @@ html.noscroll,html.noscroll body{overflow:hidden}
       </section>
 
 `,
-      settle: `      <section>
-        <h2>Detailed payments</h2>
-        <p class="hint">Every payment per expense, before any offsetting. Use this to see where each amount comes from.</p>
-        ${settleHtml()}
-      </section>
-
-`,
       export: `      <section>
         <h2>Export</h2>
         <p class="hint">The Excel file has sheets for the summary, expenses, categories, the overall table, payments per person, the offset details and the payments per expense. It opens in Excel, Numbers and Google Sheets.</p>
@@ -612,7 +590,7 @@ html.noscroll,html.noscroll body{overflow:hidden}
     };
     P.perperson = `<section>
         <h2>Payments per person</h2>
-        <p class="hint">What each person pays each other person. When two people owe each other, the amounts are offset and only the difference is paid. The detailed list below shows every original payment.</p>
+        <p class="hint">What each person pays each other person. When two people owe each other, the amounts are offset and only the difference is paid. The "Who paid for what" table above shows where each amount comes from.</p>
         ${perPersonHtml()}
       </section>`;
     const tabTitle = (t, sub) => `<header class="top"><div class="ver">Trip Split ${APP_VERSION} <span>${APP_DATE}</span></div><h1 class="tab-title">${t}</h1><div class="sub">${esc(sub)}</div></header>`;
@@ -629,7 +607,7 @@ html.noscroll,html.noscroll body{overflow:hidden}
       </section>`;
     let body;
     if(tab==='people') body = tabTitle('Travellers', state.name) + P.people + pillRow + P.balance;
-    else if(tab==='reports') body = tabTitle('Reports', state.name) + pillRow + P.cats + P.overall + P.perperson + P.settle;
+    else if(tab==='reports') body = tabTitle('Reports', state.name) + pillRow + P.cats + P.overall + P.perperson;
     else if(tab==='more') body = tabTitle('More', state.name) + P.currencies + P.export + dataSection;
     else body = P.header + P.hero + P.tiles + `<button class="add-big" data-act="add">${IC.plus}<span>Add expense</span></button>` + P.expenses;
     const tabBtn = (id, label, icon) => `<button class="tab" data-act="tab" data-t="${id}" aria-current="${tab===id?'page':'false'}"><span class="ti">${icon}</span><span>${label}</span></button>`;
