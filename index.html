@@ -3,66 +3,76 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Trip Split</title>
+<title>Trip Split 2</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Trip Split">
+<meta name="apple-mobile-web-app-title" content="Trip Split 2">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="theme-color" content="#F5F7FA">
+<meta name="theme-color" content="#FFFFFF">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style id="app-style">
 :root{
-  --paper:#F5F7FA; --card:#FFFFFF; --ink:#1B2838; --muted:#667385; --line:#DCE2EA;
-  --red:#C8323C; --blue:#1F4E9C; --pos:#1E7A4C; --neg:#B4302F; --tint:#EDF2FA;
-  --display:"Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
-  --body:"IBM Plex Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --page:#FFFFFF; --paper:#EEF3F6; --card:#FFFFFF; --ink:#0F1E30; --muted:#66788B; --line:#E2E9EF;
+  --red:#D6402F; --blue:#0B2A4A; --pos:#1E7A3E; --neg:#C2372B; --tint:#E2EAF0;
+  --brand:#0B2A4A; --on-brand:#FFFFFF; --hero:#0B2A4A; --accent:#7CF0C9; --on-accent:#07121D;
+  --i-sand:#EFE9DF; --i-sky:#DDEBFB; --i-peach:#FDE6DA; --i-mint:#D9F5EA;
+  --s1:#0E7C66; --s1-bg:#E4F6EF; --s1-on:#FFFFFF; --s2:#1F5FBF; --s2-bg:#E4EEFB; --s2-on:#FFFFFF; --s3:#C2432A; --s3-bg:#FDEBE3; --s3-on:#FFFFFF;
+  --display:"Inter", "Avenir Next", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --body:"Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
   box-sizing:border-box;
   padding-top:env(safe-area-inset-top,0px);
   padding-bottom:env(safe-area-inset-bottom,0px);
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --paper:#10161F; --card:#18202B; --ink:#E7ECF3; --muted:#93A0B2; --line:#2A3544;
-    --red:#E0545C; --blue:#6E9BE8; --pos:#4FC08A; --neg:#EE6B68; --tint:#1D2A3B;
+    --page:#07121D; --paper:#112131; --card:#0D1A28; --ink:#EAF2F8; --muted:#8FA3B5; --line:#1D2F42;
+    --red:#F0705F; --blue:#7CF0C9; --pos:#5BD08A; --neg:#F0796E; --tint:#1B2E41;
+    --brand:#7CF0C9; --on-brand:#07121D;
+    --i-sand:#2B2A26; --i-sky:#1B2E4A; --i-peach:#3D2A22; --i-mint:#173B31;
+    --s1:#5FE0B8; --s1-bg:#12332B; --s1-on:#07121D; --s2:#8DB8FF; --s2-bg:#14294A; --s2-on:#07121D; --s3:#FF9E80; --s3-bg:#3A2118; --s3-on:#07121D;
   }
 }
 :root[data-theme="dark"]{
-  --paper:#10161F; --card:#18202B; --ink:#E7ECF3; --muted:#93A0B2; --line:#2A3544;
-  --red:#E0545C; --blue:#6E9BE8; --pos:#4FC08A; --neg:#EE6B68; --tint:#1D2A3B;
+  --page:#07121D; --paper:#112131; --card:#0D1A28; --ink:#EAF2F8; --muted:#8FA3B5; --line:#1D2F42;
+  --red:#F0705F; --blue:#7CF0C9; --pos:#5BD08A; --neg:#F0796E; --tint:#1B2E41;
+  --brand:#7CF0C9; --on-brand:#07121D;
+  --i-sand:#2B2A26; --i-sky:#1B2E4A; --i-peach:#3D2A22; --i-mint:#173B31;
+  --s1:#5FE0B8; --s1-bg:#12332B; --s1-on:#07121D; --s2:#8DB8FF; --s2-bg:#14294A; --s2-on:#07121D; --s3:#FF9E80; --s3-bg:#3A2118; --s3-on:#07121D;
 }
 html{scroll-padding-top:env(safe-area-inset-top,0px);-webkit-text-size-adjust:100%}
 button,.chip,.exp,.bal-row{touch-action:manipulation}
 *,*::before,*::after{box-sizing:inherit}
-body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+body{margin:0;background:var(--page);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
 button,input,select{font:inherit;color:inherit}
-.airmail{height:10px;background:repeating-linear-gradient(-45deg,var(--red) 0 14px,transparent 14px 22px,var(--blue) 22px 36px,transparent 36px 44px)}
-.wrap{max-width:760px;margin:0 auto;padding:20px 16px 64px}
-header.top{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:flex-end;justify-content:space-between;margin:10px 0 22px}
-.trip-name{font-family:var(--display);font-weight:800;font-size:clamp(30px,8vw,46px);line-height:1.05;letter-spacing:-.02em;border:0;background:transparent;padding:2px 0;width:100%;min-width:0;border-bottom:2px dashed transparent}
+.wrap{max-width:640px;margin:0 auto;padding:16px 16px 120px}
+header.top{margin:8px 0 16px}
+.trip-name{font-family:var(--display);font-weight:800;font-size:clamp(28px,8.5vw,40px);line-height:1.08;letter-spacing:-.03em;border:0;background:transparent;padding:2px 0;width:100%;min-width:0;border-bottom:2px dashed transparent}
 .trip-name:hover,.trip-name:focus{border-bottom-color:var(--line);outline:none}
+.ver{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.ver span{font-weight:500;margin-left:4px;text-transform:none;letter-spacing:0}
 .title-col{flex:1 1 320px;min-width:0}
 .sub{color:var(--muted);font-size:14px;margin-top:4px}
-.savebar{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--muted)}
-.btn{border:1.5px solid var(--ink);background:var(--ink);color:var(--paper);border-radius:999px;padding:8px 16px;font-weight:600;cursor:pointer;font-size:15px}
-.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.savebar{font-size:13px;color:var(--muted);margin-top:2px;min-height:1px}
+.btn{border:1.5px solid var(--brand);background:var(--brand);color:var(--on-brand);border-radius:999px;padding:9px 18px;font-weight:700;cursor:pointer;font-size:15px}
+.btn.ghost{background:var(--paper);color:var(--ink);border-color:transparent}
 .btn.small{padding:8px 14px;font-size:14px}
 .btn:disabled{opacity:.45;cursor:default}
 .btn:focus-visible,.chip:focus-visible,input:focus-visible,select:focus-visible,.exp:focus-visible,.bal-row:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
 section{margin-top:30px}
-h2{font-family:var(--display);font-weight:700;font-size:22px;letter-spacing:-.01em;margin:0 0 4px}
+h2{font-family:var(--display);font-weight:800;font-size:22px;letter-spacing:-.02em;margin:0 0 4px}
 .hint{color:var(--muted);font-size:14px;margin:0 0 14px}
 .people{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-.chip{display:inline-flex;align-items:center;gap:6px;border:1.5px solid var(--line);background:var(--card);border-radius:999px;padding:5px 8px 5px 12px;font-weight:500;cursor:pointer}
+.chip{display:inline-flex;align-items:center;gap:6px;border:1.5px solid transparent;background:var(--paper);border-radius:999px;padding:5px 8px 5px 14px;font-weight:600;cursor:pointer}
 .chip .x{border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:20px;line-height:1;padding:6px 8px;margin:-6px -4px -6px 0}
 .add-person{display:flex;gap:6px}
 .add-person{flex:1 1 200px;min-width:0}
 .add-person input{border:1.5px dashed var(--line);border-radius:999px;padding:9px 14px;background:transparent;flex:1;min-width:0;width:100%;font-size:16px}
 .msg{color:var(--neg);font-size:14px;margin-top:8px;min-height:1px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:24px}
 form.exp-form{padding:16px;display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
 form.exp-form>*{min-width:0}
 .row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
@@ -75,22 +85,10 @@ label.f input,label.f select{border:1.5px solid var(--line);border-radius:10px;p
 .linkbtn{border:0;background:none;color:var(--blue);cursor:pointer;font-weight:600;font-size:14px;padding:2px}
 .pick{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
 .pick .chip{padding:9px 14px;min-height:40px}
-.pick .chip[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
+.pick .chip[aria-pressed="true"]{background:var(--brand);border-color:var(--brand);color:var(--on-brand)}
 .each{font-size:14px;color:var(--muted)}
 .form-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
-.exp-list{list-style:none;margin:14px 0 0;padding:0}
-.exp{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 12px;padding:14px 16px;border-top:1px solid var(--line);cursor:pointer;background:var(--card)}
-.exp:first-child{border-top:0;border-radius:14px 14px 0 0}
-.exp:last-child{border-radius:0 0 14px 14px}
-.exp:only-child{border-radius:14px}
-.exp:hover{background:var(--tint)}
-.exp .what{font-weight:600}
-.exp .amt{font-family:var(--display);font-weight:700;font-variant-numeric:tabular-nums;text-align:right}
-.exp .who{grid-column:1/-1;color:var(--muted);font-size:14px;overflow-wrap:anywhere}
-.exp.editing{outline:2px solid var(--blue);outline-offset:-2px}
 .empty{padding:22px 16px;color:var(--muted);text-align:center}
-.total{display:flex;justify-content:space-between;padding:10px 4px 0;color:var(--muted);font-size:14px}
-.total b{color:var(--ink);font-variant-numeric:tabular-nums}
 .bal-row{padding:14px 16px;border-top:1px solid var(--line);cursor:pointer}
 .bal-row:first-child{border-top:0}
 .bal-top{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:baseline;gap:12px}
@@ -117,8 +115,6 @@ label.f input,label.f select{border:1.5px solid var(--line);border-radius:10px;p
 .arrow{color:var(--red);font-weight:700;padding:0 6px}
 .t-names .arrow:first-of-type{padding-left:6px}
 .row.one{grid-template-columns:minmax(0,1fr)}
-.cat{display:inline-block;font-size:12px;font-weight:600;color:var(--blue);background:var(--tint);border-radius:999px;padding:1px 9px;margin-right:8px;vertical-align:1px}
-.exp .what{overflow-wrap:anywhere}
 .catrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;align-items:baseline;padding:12px 16px;border-top:1px solid var(--line)}
 .catrow:first-child{border-top:0}
 .catrow b{font-family:var(--display);font-variant-numeric:tabular-nums}
@@ -139,6 +135,10 @@ table.grid{border-collapse:separate;border-spacing:0;width:100%;font-size:14px;f
 .grid.fit th:last-child,.grid.fit td:last-child{padding-right:14px}
 @media (max-width:400px){.grid.fit{font-size:13px}.grid.fit th,.grid.fit td{padding:10px 5px}.grid.fit th:first-child{padding-left:12px}.grid.fit th:last-child,.grid.fit td:last-child{padding-right:12px}}
 @media (max-width:340px){.grid.fit{font-size:12px}.grid.fit th,.grid.fit td{padding:10px 4px}}
+.grid tbody tr.ex-paid > *{border-top:2px solid var(--line)}
+.grid tbody tr.ex-paid:first-child > *{border-top:0}
+.grid tbody tr.ex-div > *{border-top:1px dashed var(--line)}
+.grid tbody tr.ex-div th{font-weight:500;color:var(--muted)}
 .dp{border-top:1px solid var(--line)}
 .dp:first-child{border-top:0}
 .dp-head{padding:14px 16px 2px;display:grid;gap:1px}
@@ -165,24 +165,119 @@ label.f .amt-row input{flex:1 1 auto;width:auto;min-width:0}
 .cur-row .x{flex:0 0 auto;margin-left:auto;border:0;background:transparent;color:var(--muted);font-size:20px;cursor:pointer;padding:0 6px}
 .seg{display:flex;gap:8px;margin:0 0 12px}
 .seg .chip{padding:5px 14px}
-.seg .chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.seg .chip[aria-pressed="true"]{background:var(--brand);border-color:var(--brand);color:var(--on-brand)}
 @media (max-width:400px){
-  .wrap{padding:14px 12px 48px}
+  .wrap{padding:12px 12px 120px}
   form.exp-form{padding:14px}
   .bal-net{font-size:19px}
   .transfers .t-amt{font-size:18px}
   .form-actions .btn{flex:1 1 auto}
 }
+.hero{background:var(--hero);color:#fff;border-radius:28px;padding:20px 20px 18px;margin:0 0 12px;border:1px solid rgba(255,255,255,.08)}
+.hero-top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.cap{font-size:12px;font-weight:700;letter-spacing:.09em;color:rgba(255,255,255,.62);text-transform:uppercase}
+.hero-amt{font-size:clamp(30px,10vw,46px);font-weight:800;letter-spacing:-.035em;line-height:1.1;margin:12px 0 16px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.cpills{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.cpill{border:0;border-radius:999px;padding:6px 13px;min-height:32px;font-weight:700;font-size:13px;background:rgba(255,255,255,.14);color:rgba(255,255,255,.88);cursor:pointer}
+.cpill[aria-pressed="true"]{background:var(--accent);color:var(--on-accent)}
+.cpill:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.segbar{display:flex;gap:3px;height:10px;border-radius:999px;overflow:hidden;background:rgba(255,255,255,.14)}
+.segbar i{display:block;min-width:4px}
+.hero-legend{margin-top:10px;font-size:13px;color:rgba(255,255,255,.68);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.tile{background:var(--paper);border-radius:24px;padding:14px;display:grid;gap:2px;align-content:start;min-width:0}
+.tile.lime{background:var(--accent);color:var(--on-accent)}
+.tico{width:36px;height:36px;border-radius:50%;background:var(--card);display:grid;place-items:center;margin-bottom:12px}
+.tico svg{width:18px;height:18px}
+.tico.dark{background:var(--hero);color:#fff}
+.tl{color:var(--muted);font-size:13px}
+.tile.lime .tl{color:rgba(7,18,29,.72)}
+.tv{font-size:clamp(17px,5.4vw,22px);font-weight:800;letter-spacing:-.02em;overflow-wrap:anywhere;line-height:1.2}
+.ecards{list-style:none;margin:14px 0 0;padding:0;display:grid;gap:10px}
+.ecard{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:24px;padding:14px;cursor:pointer}
+.ecard:hover{background:var(--paper)}
+.ecard.editing{outline:2px solid var(--brand);outline-offset:-2px}
+.ico{width:48px;height:48px;border-radius:16px;display:grid;place-items:center;color:var(--ink)}
+.ico svg{width:22px;height:22px}
+.ico.ink{background:var(--brand);color:var(--on-brand)}
+.ico.lime{background:var(--accent);color:var(--on-accent)}
+.ico.sand{background:var(--i-sand)}
+.ico.sky{background:var(--i-sky)}
+.ico.peach{background:var(--i-peach)}
+.ico.mint{background:var(--i-mint)}
+.etxt{display:grid;min-width:0}
+.etxt .what{font-weight:700;font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.esub{color:var(--muted);font-size:13px;line-height:1.35;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;overflow-wrap:anywhere}
+.eright{display:grid;justify-items:end;gap:5px}
+.eright .amt{font-weight:800;font-size:16px;letter-spacing:-.01em;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pill{font-size:12px;font-weight:600;background:var(--paper);border-radius:999px;padding:3px 10px;white-space:nowrap}
+.tab-title{font-family:var(--display);font-weight:800;font-size:clamp(28px,8.5vw,40px);line-height:1.08;letter-spacing:-.03em;margin:2px 0}
+.pillrow{margin:18px 0 0}
+.cpills.light{justify-content:flex-start}
+.cpills.light .cpill{background:var(--paper);color:var(--ink)}
+.cpills.light .cpill[aria-pressed="true"]{background:var(--brand);color:var(--on-brand)}
+.tabbar{position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:min(100%,640px);z-index:10;display:grid;grid-template-columns:repeat(4,1fr);align-items:end;background:var(--page);border-top:1px solid var(--line);padding:8px 6px calc(8px + env(safe-area-inset-bottom,0px))}
+.tab{border:0;background:transparent;color:var(--muted);display:grid;justify-items:center;gap:3px;font-size:12px;font-weight:600;padding:2px 0;min-height:52px;cursor:pointer}
+.tab .ti{width:54px;height:30px;border-radius:999px;display:grid;place-items:center}
+.tab svg{width:22px;height:22px}
+.tab[aria-current="page"]{color:var(--ink)}
+.tab[aria-current="page"] .ti{background:var(--accent);color:var(--on-accent)}
+.tab:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+.add-big{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:14px;padding:15px 18px;border:0;border-radius:20px;background:var(--brand);color:var(--on-brand);font-weight:700;font-size:16px;cursor:pointer}
+.add-big svg{width:20px;height:20px}
+html.noscroll,html.noscroll body{overflow:hidden}
+.scrim{position:fixed;inset:0;background:rgba(7,18,29,.5);z-index:40}
+.sheet{position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:min(100%,640px);max-height:92vh;max-height:92dvh;display:flex;flex-direction:column;background:var(--card);border-radius:28px 28px 0 0;z-index:41;box-shadow:0 -12px 40px rgba(0,0,0,.25)}
+.sheet::before{content:"";flex:none;width:40px;height:4px;border-radius:2px;background:var(--line);margin:8px auto 0}
+.sheet-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 20px 0}
+.sheet-head h2{margin:0}
+.x-btn{width:40px;height:40px;border-radius:50%;border:0;background:var(--paper);color:var(--ink);font-size:24px;line-height:1;cursor:pointer}
+.sheet-body{overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:8px 20px 0}
+.amt-big{display:flex;gap:8px;align-items:stretch}
+.cur-sel{flex:0 0 92px;width:92px;border:0;background:var(--paper);color:var(--ink);border-radius:16px;padding:0 10px;font-size:16px;font-weight:700}
+.amount-big{flex:1 1 auto;min-width:0;width:100%;border:0;background:var(--paper);color:var(--ink);border-radius:16px;padding:12px 16px;font-size:32px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.sh-label{font-size:13px;font-weight:600;color:var(--muted);margin:14px 0 6px}
+.sh-in{display:block;width:100%;min-width:0;border:0;background:var(--paper);color:var(--ink);border-radius:14px;padding:12px 14px;font-size:16px;margin-top:10px}
+.split-head .sh-label{margin:14px 0 6px}
+.sheet .each{margin-top:6px}
+.sheet-actions{display:flex;gap:10px;margin-top:6px}
+.sheet-foot{position:sticky;bottom:0;background:var(--card);padding:8px 0 calc(16px + env(safe-area-inset-bottom,0px));margin-top:4px;box-shadow:0 -10px 12px -8px var(--card)}
+.sheet-foot .msg{margin:0 0 4px;min-height:0}
+.sheet-actions .btn{flex:1;padding:14px 16px;font-size:16px}
+.msg.ok{color:var(--pos)}
+@keyframes sheetUp{from{transform:translate(-50%,48px);opacity:0}to{transform:translate(-50%,0);opacity:1}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.chip-name{border:0;background:transparent;font:inherit;color:inherit;padding:6px 2px 6px 0;cursor:pointer}
+.chip.on{background:var(--brand);color:var(--on-brand)}
+.chip.on .x{color:var(--on-brand)}
+.rename-row{display:flex;gap:8px;align-items:center;margin-top:12px}
+.rename-row input{flex:1;min-width:0;border:1.5px solid var(--brand);border-radius:999px;padding:10px 16px;background:var(--card);color:var(--ink);font-size:16px}
+.sec{background:var(--sbg);border-radius:20px;padding:12px 14px 14px;margin-top:12px}
+.sec.s1{--sbg:var(--s1-bg);--sc:var(--s1);--son:var(--s1-on)}
+.sec.s2{--sbg:var(--s2-bg);--sc:var(--s2);--son:var(--s2-on)}
+.sec.s3{--sbg:var(--s3-bg);--sc:var(--s3);--son:var(--s3-on)}
+.sec-head{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.sec-num{flex:none;width:22px;height:22px;border-radius:50%;background:var(--sc);color:var(--son);display:grid;place-items:center;font-size:12px;font-weight:800}
+.sec-title{font-weight:700;font-size:14px}
+.sec-hint{margin-left:auto;font-size:12px;color:var(--muted)}
+.sec-links{margin-left:auto;display:flex;gap:10px}
+.sec .linkbtn{color:var(--sc);font-weight:700}
+.sec .pick{margin-top:0;gap:6px}
+.sec .pick .chip{background:var(--card);border-color:transparent;padding:8px 13px;min-height:38px}
+.sec .pick .chip[aria-pressed="true"]{background:var(--sc);border-color:var(--sc);color:var(--son)}
+.sec .sh-in{background:var(--card);margin-top:10px}
+@media (prefers-reduced-motion:no-preference){.sheet.enter{animation:sheetUp .22s ease-out}.scrim.enter{animation:fadeIn .2s ease-out}}
 @media (prefers-reduced-motion:no-preference){.bar i{transition:width .3s ease,left .3s ease}}
 </style>
 </head>
 <body>
-<div class="airmail" aria-hidden="true"></div>
 <div id="app" class="wrap"></div>
+<div id="sheet-root"></div>
 <script id="app-script">
 (function(){
+  const APP_VERSION = 'v2.5', APP_DATE = '30 Sep 2026';   // keep in step with CACHE in sw.js
   const STORE_KEY = 'tripsplit:v1';
-  const DEFAULT_STATE = {name:'Trip expenses', currency:'PHP', rates:{TWD:1.9}, view:'PHP', settleMode:'direct', people:[], expenses:[]};
+  const DEFAULT_STATE = {name:'Trip expenses', currency:'PHP', rates:{TWD:1.9}, view:'PHP', people:[], expenses:[]};
   const LEGACY = {airfare:'Flights',flight:'Flights',flights:'Flights',hotel:'Hotel',food:'Food',taxi:'Transport'};
   function normalize(x){
     if(!x || !Array.isArray(x.people) || !Array.isArray(x.expenses)) return null;
@@ -190,7 +285,7 @@ label.f .amt-row input{flex:1 1 auto;width:auto;min-width:0}
     if(!x.currency) x.currency = 'PHP';
     if(!x.rates || typeof x.rates!=='object') x.rates = {};
     if(!x.view || (x.view!==x.currency && !x.rates[x.view])) x.view = x.currency;
-    if(x.settleMode!=='net' && x.settleMode!=='direct') x.settleMode = 'direct';
+    delete x.settleMode;
     x.expenses.forEach(e => {
       if(!e.cat){ const k=(e.desc||'').trim().toLowerCase(); if(LEGACY[k]){ e.cat=LEGACY[k]; e.desc=''; } else e.cat='Other'; }
       if(!e.cur) e.cur = x.currency;
@@ -206,10 +301,12 @@ label.f .amt-row input{flex:1 1 auto;width:auto;min-width:0}
   const title = e => e.desc ? e.cat+': '+e.desc : e.cat;
   const ALL_CURS = ['PHP','TWD','USD','JPY','KRW','HKD','SGD','THB','VND','CNY','EUR','AUD','GBP'];
   const readOnly = false;
+  let tab = 'home';
+  let renaming = null, renameDraft = '';
   let editingId = null, openRows = new Set(), peopleMsg = '';
   let form = blankForm();
 
-  function blankForm(){ return {cat: state.lastCat || 'Food', catNew:'', desc:'', amount:'', cur: state.lastCur || state.currency, payer: state.people[0] || '', split:[...state.people]}; }
+  function blankForm(){ return {cat: state.lastCat || 'Food', catNew:'', desc:'', amount:'', cur: (state.lastCur && (state.lastCur===state.currency || state.rates[state.lastCur])) ? state.lastCur : state.currency, payer: state.people.includes(state.lastPayer) ? state.lastPayer : (state.people[0] || ''), split:[...state.people]}; }
   const app = document.getElementById('app');
   const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const curs = () => [state.currency, ...Object.keys(state.rates)];
@@ -247,17 +344,7 @@ label.f .amt-row input{flex:1 1 auto;width:auto;min-width:0}
       Object.entries(sh).forEach(([p,v]) => { if(per[p]){ per[p].owe += v; per[p].lines.push({label:title(e)+' share (1 of '+e.split.length+')', v:-v}); } });
     });
     state.people.forEach(p => per[p].net = per[p].paid - per[p].owe);
-    // Settle: largest debtor pays largest creditor until everyone is even.
-    const cred = state.people.filter(p=>per[p].net>0).map(p=>({p,v:per[p].net})).sort((a,b)=>b.v-a.v);
-    const debt = state.people.filter(p=>per[p].net<0).map(p=>({p,v:-per[p].net})).sort((a,b)=>b.v-a.v);
-    const transfers = []; let i=0,j=0;
-    while(i<debt.length && j<cred.length){
-      const x = Math.min(debt[i].v, cred[j].v);
-      if(x>0) transfers.push({from:debt[i].p, to:cred[j].p, v:x});
-      debt[i].v -= x; cred[j].v -= x;
-      if(debt[i].v===0) i++; if(cred[j].v===0) j++;
-    }
-    return {per, transfers};
+    return {per};
   }
 
   const viewCode = () => state.view && rateOf(state.view) ? state.view : state.currency;
@@ -271,28 +358,50 @@ label.f .amt-row input{flex:1 1 auto;width:auto;min-width:0}
   const nf0 = c => int0.format(Math.round(toNum(c)));
   const sgn0 = c => { const r = Math.round(toNum(c)); return r>0 ? '+'+int0.format(r) : r<0 ? '−'+int0.format(-r) : '–'; };
   const tone0 = c => tone(Math.round(toNum(c)));
-  const segHtml = () => curs().length>1 ? `<div class="seg" role="group" aria-label="Show amounts in">${curs().map(c=>`<button class="chip" data-act="view" data-c="${c}" aria-pressed="${c===state.view}">In ${c}</button>`).join('')}</div>` : '';
+  // ---- icons for the new look
+  const svg = (p, w) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w||1.8}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+  const IC = {
+    plane: svg('<path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/>'),
+    bed: svg('<path d="M2 20v-8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v8"/><path d="M4 10V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v4"/><path d="M12 4v6"/><path d="M2 18h20"/>'),
+    fork: svg('<path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>'),
+    train: svg('<path d="M8 3.1V7a4 4 0 0 0 8 0V3.1"/><path d="m9 15-1-1"/><path d="m15 15 1-1"/><path d="M9 19c-2.8 0-5-2.2-5-5v-4a8 8 0 0 1 16 0v4c0 2.8-2.2 5-5 5Z"/><path d="m8 19-2 3"/><path d="m16 19 2 3"/>'),
+    ticket: svg('<path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/>'),
+    bag: svg('<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/>'),
+    tag: svg('<path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/>'),
+    users: svg('<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>'),
+    list: svg('<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>'),
+    arrow: svg('<path d="M7 17 17 7"/><path d="M7 7h10v10"/>'),
+    plus: svg('<path d="M12 5v14M5 12h14"/>', 2.2),
+    home: svg('<path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>'),
+    chart: svg('<path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/>'),
+    dots: svg('<circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/>', 2.6)
+  };
+  const CAT_LOOK = {Flights:['ink','plane'], Hotel:['sand','bed'], Food:['lime','fork'], Transport:['sky','train'], Activities:['peach','ticket'], Shopping:['mint','bag'], Other:['sand','tag']};
+  const catIco = c => { const [k,i] = CAT_LOOK[c] || ['sand','tag']; return `<span class="ico ${k}">${IC[i]}</span>`; };
+  const SEG_COLORS = ['#7CF0C9','#FFFFFF','#5F8FBF','#3A6494'];
+  const compact = c => { const v = viewCode(); try{ return new Intl.NumberFormat('en-PH',{style:'currency',currency:v,notation:'compact',maximumFractionDigits:1}).format(c/rateOf(v)/100); }catch(e){ return nf(c); } };
 
   // One table of numbers used by the screen, the Excel file and the Google Sheets copy.
   function tableData(){
-    const {per, transfers} = compute();
+    const {per} = compute();
     const people = state.people;
     const rows = state.expenses.map(e => {
       const sh = shares(e), cents = baseCents(e);
-      return {label:title(e), sub:'Paid by '+e.payer+', '+origTxt(e), payer:e.payer, amount:toNum(cents),
-              cells: people.map(p => (p===e.payer ? cents : 0) - (sh[p]||0))};
+      return {label:title(e), sub:'Paid by '+e.payer+', '+origTxt(e), orig:origTxt(e), cur:e.cur, payer:e.payer, amount:toNum(cents), paid:cents, shares:sh, n:e.split.length,
+              paidCells: people.map(p => p===e.payer ? cents : 0), shareCells: people.map(p => sh[p]||0)};
     });
-    return {per, transfers, people, rows};
+    return {per, people, rows};
   }
   function overallHtml(){
     const d = tableData(), {per, people, rows} = d;
-    if(!people.length || !rows.length) return '<div class="card empty">Add travelers and expenses to see the table.</div>';
+    if(!people.length || !rows.length) return '<div class="card empty">Add travellers and expenses to see the table.</div>';
     const tot = k => people.reduce((n,p)=>n+per[p][k],0);
     const summary = `<div class="tbl-wrap"><table class="grid fit"><thead><tr><th>Person</th><th>Paid</th><th>Share</th><th>Net</th></tr></thead>
       <tbody>${people.map(p=>`<tr><th scope="row">${esc(p)}</th><td>${nf0(per[p].paid)}</td><td>${nf0(per[p].owe)}</td><td class="${tone0(per[p].net)}">${sgn0(per[p].net)}</td></tr>`).join('')}</tbody>
       <tfoot><tr><th scope="row">Total</th><td>${nf0(tot('paid'))}</td><td>${nf0(tot('owe'))}</td><td>${sgn0(tot('net'))}</td></tr></tfoot></table></div>`;
     const matrix = `<div class="tbl-wrap"><table class="grid"><thead><tr><th>Expense</th>${people.map(p=>`<th>${esc(p)}</th>`).join('')}</tr></thead>
-      <tbody>${rows.map(r=>`<tr><th scope="row">${esc(r.label)}<span class="gsub">${esc(r.sub)}</span></th>${r.cells.map(c=>`<td class="${tone(c)}">${sgn(c)}</td>`).join('')}</tr>`).join('')}</tbody>
+      <tbody>${rows.map(r=>`<tr class="ex-paid"><th scope="row">${esc(r.label)}<span class="gsub">${esc(r.sub)}</span></th>${r.paidCells.map(c=>`<td class="${tone(c)}">${sgn(c)}</td>`).join('')}</tr>
+        <tr class="ex-div"><th scope="row">Divided by ${r.n}<span class="gsub">${fmt(Math.round(r.paid/r.n))} each</span></th>${r.shareCells.map(c=>`<td class="${tone(-c)}">${sgn(-c)}</td>`).join('')}</tr>`).join('')}</tbody>
       <tfoot>
         <tr><th scope="row">Paid</th>${people.map(p=>`<td>${nf(per[p].paid)}</td>`).join('')}</tr>
         <tr><th scope="row">Share of costs</th>${people.map(p=>`<td>${nf(per[p].owe)}</td>`).join('')}</tr>
@@ -300,7 +409,7 @@ label.f .amt-row input{flex:1 1 auto;width:auto;min-width:0}
       </tfoot></table></div>`;
     return `<div class="card">${summary}</div>
       <h3 class="h3">Who paid for what</h3>
-      <p class="hint">Each cell is what that person paid minus their share of that expense. Every column adds up to that person's net. Swipe sideways to see everyone.</p>
+      <p class="hint">Each expense has two lines: what was paid, then how it is divided, including the payer's own share. Every column adds up to that person's net. Swipe sideways to see everyone.</p>
       <div class="card">${matrix}</div>`;
   }
 
@@ -313,17 +422,15 @@ label.f .amt-row input{flex:1 1 auto;width:auto;min-width:0}
     }).filter(g => g.items.length);
   }
   const payRow = (from, to, amtHtml) => `<li><span class="t-names"><b>${esc(from)}</b><span class="arrow">pays</span><b>${esc(to)}</b></span><span class="t-amt">${amtHtml}</span></li>`;
-  function settleHtml(transfers){
+  function settleHtml(){
     if(!state.expenses.length) return '<div class="card empty">Nothing to settle yet.</div>';
-    if(state.settleMode==='net')
-      return transfers.length ? `<ul class="transfers card">${transfers.map(t=>payRow(t.from,t.to,fmt(t.v))).join('')}</ul>` : '<div class="card empty">Everyone is even.</div>';
     const g = directPayments();
     if(!g.length) return '<div class="card empty">Everyone only paid their own share.</div>';
     return `<div class="card">${g.map(x=>`<div class="dp"><div class="dp-head"><b>${esc(x.title)}</b><span>Paid by ${esc(x.payer)}, ${esc(x.orig)}</span></div><ul class="transfers">${x.items.map(i=>payRow(i.from,i.to,fmt(i.c))).join('')}</ul></div>`).join('')}</div>`;
   }
 
   function render(){
-    const {per, transfers} = compute();
+    const {per} = compute();
     const total = state.expenses.reduce((s,e)=>s+baseCents(e),0);
     const maxAbs = Math.max(1, ...state.people.map(p=>Math.abs(per[p].net)));
     const amt = toCents(form.amount);
@@ -334,69 +441,65 @@ label.f .amt-row input{flex:1 1 auto;width:auto;min-width:0}
     const saveTxt = saveFailed ? '<span style="color:var(--neg)">Could not save on this phone. Tap Backup below.</span>'
       : (state.people.length || state.expenses.length) ? '<span>Saved on this phone</span>' : '';
 
-    app.innerHTML = `
-      <header class="top">
-        <div class="title-col">
-          <input class="trip-name" data-f="name" value="${esc(state.name)}" aria-label="Trip name" ${readOnly?'readonly':''}>
-          <div class="sub">${state.people.length} travelers, ${state.expenses.length} expenses, ${fmt(total)} total</div>
-        </div>
+    const P = {
+      header: `      <header class="top">
+        <div class="ver">Trip Split ${APP_VERSION} <span>${APP_DATE}</span></div>
+        <input class="trip-name" data-f="name" value="${esc(state.name)}" aria-label="Trip name" ${readOnly?'readonly':''}>
+        <div class="sub">${state.people.length} travellers &bull; ${state.expenses.length} expenses</div>
         <div class="savebar" aria-live="polite">${saveTxt}</div>
       </header>
 
-      <section>
-        <h2>Travelers</h2>
-        <p class="hint">Everyone who might pay or share a cost.</p>
-        <div class="people">
-          ${state.people.map(p=>`<span class="chip" tabindex="-1">${esc(p)}${readOnly?'':`<button class="x" data-act="rm-person" data-p="${esc(p)}" aria-label="Remove ${esc(p)}">×</button>`}</span>`).join('')}
-          ${readOnly?'':`<form class="add-person" data-form="person"><input name="p" placeholder="Add a name" aria-label="Add a traveler" autocomplete="off"><button class="btn small ghost">Add</button></form>`}
+`,
+      hero: `      <div class="hero">
+        <div class="hero-top"><span class="cap">Total spent</span>
+          ${curs().length>1 ? `<div class="cpills" role="group" aria-label="Show amounts in">${curs().map(c=>`<button class="cpill" data-act="view" data-c="${c}" aria-pressed="${c===viewCode()}">${c}</button>`).join('')}</div>` : `<span class="cap">${viewCode()}</span>`}
         </div>
+        <div class="hero-amt">${fmt(total)}</div>
+        <div class="segbar" aria-hidden="true">${catRows.map(([c,v],i)=>`<i style="flex:${v} 1 0;background:${SEG_COLORS[i%SEG_COLORS.length]}"></i>`).join('')}</div>
+        <div class="hero-legend">${total ? catRows.slice(0,3).map(([c,v])=>esc(c)+' '+Math.round(v/total*100)+'%').join(' &bull; ') : 'No expenses yet'}</div>
+      </div>
+`,
+      tiles: `      <div class="tiles">
+        <div class="tile"><span class="tico">${IC.users}</span><span class="tl">Travellers</span><b class="tv">${state.people.length}</b></div>
+        <div class="tile"><span class="tico">${IC.list}</span><span class="tl">Expenses</span><b class="tv">${state.expenses.length}</b></div>
+        <div class="tile lime"><span class="tico dark">${IC.arrow}</span><span class="tl">Per person</span><b class="tv">${state.people.length && total ? compact(Math.round(total/state.people.length)) : '–'}</b></div>
+      </div>
+
+`,
+      people: `      <section>
+        <h2>Who's going</h2>
+        <p class="hint">Everyone who might pay or share a cost. Tap a name to rename it.</p>
+        <div class="people">
+          ${state.people.map(p=>`<span class="chip${p===renaming?' on':''}" tabindex="-1"><button type="button" class="chip-name" data-act="rename-person" data-p="${esc(p)}" aria-label="Rename ${esc(p)}">${esc(p)}</button>${readOnly?'':`<button class="x" data-act="rm-person" data-p="${esc(p)}" aria-label="Remove ${esc(p)}">×</button>`}</span>`).join('')}
+          ${readOnly?'':`<form class="add-person" data-form="person"><input name="p" placeholder="Add a name" aria-label="Add a traveller" autocomplete="off"><button class="btn small ghost">Add</button></form>`}
+        </div>
+        ${renaming!==null ? `<form class="rename-row" data-form="rename"><input name="n" value="${esc(renameDraft)}" aria-label="New name for ${esc(renaming)}" autocomplete="off" enterkeyhint="done"><button class="btn small">Save</button><button type="button" class="btn small ghost" data-act="rename-cancel">Cancel</button></form>` : ''}
         <div class="msg" role="status">${esc(peopleMsg)}</div>
       </section>
 
-      <section>
+`,
+      expenses: `      <section>
         <h2>Expenses</h2>
-        <p class="hint">Who paid, and who shares the cost. The payer only gets a share if you tick them.</p>
-        ${readOnly?'':`
-        <form class="card exp-form" data-form="expense">
-          <div class="row">
-            <label class="f">Category<select data-ff="cat">${cats().map(c=>`<option ${c===form.cat?'selected':''}>${esc(c)}</option>`).join('')}<option value="__new" ${form.cat==='__new'?'selected':''}>New category…</option></select></label>
-            <label class="f">Details, optional<input data-ff="desc" value="${esc(form.desc)}" placeholder="Din Tai Fung" autocomplete="off"></label>
-          </div>
-          ${form.cat==='__new'?`<label class="f">New category name<input data-ff="catNew" value="${esc(form.catNew)}" placeholder="Tours, gifts, insurance" autocomplete="off"></label>`:''}
-          <div class="row one">
-            <label class="f">Amount<span class="amt-row"><select data-ff="cur" aria-label="Currency">${curs().map(c=>`<option ${c===form.cur?'selected':''}>${c}</option>`).join('')}</select><input class="amount-in" data-ff="amount" value="${esc(form.amount)}" inputmode="decimal" placeholder="0.00" required></span></label>
-          </div>
-          <label class="f">Paid by
-            <select data-ff="payer">${state.people.map(p=>`<option ${p===form.payer?'selected':''}>${esc(p)}</option>`).join('')}</select>
-          </label>
-          <div>
-            <div class="split-head"><span>Split equally among</span>
-              <span><button type="button" class="linkbtn" data-act="all">Everyone</button> <button type="button" class="linkbtn" data-act="none">Clear</button></span>
-            </div>
-            <div class="pick">${state.people.map(p=>`<button type="button" class="chip" data-act="toggle" data-p="${esc(p)}" aria-pressed="${form.split.includes(p)}">${esc(p)}</button>`).join('')}</div>
-            <div class="each" style="margin-top:6px">${eachTxt}</div>
-          </div>
-          <div class="form-actions">
-            ${editingId?`<button type="button" class="btn ghost" data-act="del-exp">Delete</button><button type="button" class="btn ghost" data-act="cancel">Cancel</button>`:''}
-            <button class="btn" ${state.people.length?'':'disabled'}>${editingId?'Update expense':'Add expense'}</button>
-          </div>
-          <div class="msg" id="formMsg" role="status"></div>
-        </form>`}
-        ${state.expenses.length ? `<ul class="exp-list card">${state.expenses.map(e=>`
-          <li class="exp ${e.id===editingId?'editing':''}" tabindex="0" data-act="edit" data-id="${e.id}">
-            <span class="what"><span class="cat">${esc(e.cat)}</span>${esc(e.desc)}</span><span class="amt">${origTxt(e)}</span>
-            <span class="who">Paid by ${esc(e.payer)}, split ${e.split.length===state.people.length?'among everyone':'with '+e.split.map(esc).join(', ')} (${fmt(Math.round(baseCents(e)/e.split.length))} each)${e.cur!==state.view?' <span class="conv">≈ '+fmt(baseCents(e))+'</span>':''}</span>
-          </li>`).join('')}</ul>
-          <div class="total"><span>Trip total</span><b>${fmt(total)}</b></div>`
-        : `<div class="card empty" style="margin-top:14px">No expenses yet. Add the first one above.</div>`}
+        <p class="hint">Tap an expense to edit or delete it. Each one is split equally among the people you choose.</p>
+        ${state.expenses.length ? `<ul class="ecards">${state.expenses.map(e=>{
+          const n = e.split.length, each = fmt(Math.round(baseCents(e)/n));
+          const who = n===state.people.length ? 'everyone' : e.split.map(esc).join(', ');
+          return `<li class="exp ecard ${e.id===editingId?'editing':''}" tabindex="0" data-act="edit" data-id="${e.id}">
+            ${catIco(e.cat)}
+            <span class="etxt"><b class="what">${esc(e.desc||e.cat)}</b><span class="esub">${esc(e.cat)} &bull; Paid by ${esc(e.payer)} &bull; Split ${who}</span></span>
+            <span class="eright"><b class="amt">${origTxt(e)}</b><span class="pill">${each} each</span></span>
+          </li>`; }).join('')}</ul>`
+        : `<div class="card empty" style="margin-top:14px">No expenses yet. Tap Add expense to enter the first one.</div>`}
       </section>
 
-      ${catRows.length?`<section>
+`,
+      cats: `      ${catRows.length?`<section>
         <h2>Spending by category</h2>
-        <div class="card">${catRows.map(([c,v])=>`<div class="catrow"><span>${esc(c)} <span class="pct">${total?Math.round(v/total*100):0}%</span></span><b>${fmt(v)}</b><div class="bar" aria-hidden="true"><i style="left:0;width:${total?v/total*100:0}%;background:var(--blue)"></i></div></div>`).join('')}</div>
+        <div class="card">${catRows.map(([c,v])=>`<div class="catrow"><span>${esc(c)} <span class="pct">${total?Math.round(v/total*100):0}%</span></span><b>${fmt(v)}</b><div class="bar" aria-hidden="true"><i style="left:0;width:${total?v/total*100:0}%;background:var(--brand)"></i></div></div>`).join('')}</div>
       </section>`:''}
 
-      <section>
+`,
+      currencies: `      <section>
         <h2>Currencies</h2>
         <p class="hint">Expenses in other currencies are converted with these rates. Update them to what you actually paid at the money changer.</p>
         <div class="card cur-card">
@@ -410,9 +513,9 @@ label.f .amt-row input{flex:1 1 auto;width:auto;min-width:0}
         </div>
       </section>
 
-      <section>
+`,
+      balance: `      <section>
         <h2>Balance per person</h2>
-        ${segHtml()}
         <p class="hint">What each person paid minus their shares. Green gets money back, red owes. Tap a name for the breakdown.</p>
         <div class="card">${state.people.map(p=>{
           const r = per[p], cls = r.net>0?'pos':r.net<0?'neg':'zero';
@@ -425,31 +528,27 @@ label.f .amt-row input{flex:1 1 auto;width:auto;min-width:0}
             <div class="bar" aria-hidden="true"><i style="${bar}"></i><span class="mid"></span></div>
             <div class="detail"><table>${r.lines.map(l=>`<tr><td>${esc(l.label)}</td><td class="n ${l.v>0?'pos':'neg'}">${l.v>0?'+':'−'}${fmt(Math.abs(l.v))}</td></tr>`).join('') || '<tr><td>No expenses involve this person yet.</td></tr>'}
               <tr class="sum"><td>Net</td><td class="n ${cls}">${r.net>0?'+':''}${fmt(r.net)}</td></tr></table></div>
-          </div>`;}).join('') || '<div class="empty">Add travelers to see balances.</div>'}</div>
+          </div>`;}).join('') || '<div class="empty">Add travellers to see balances.</div>'}</div>
       </section>
 
-      <section>
+`,
+      overall: `      <section>
         <h2>Overall table</h2>
-        ${segHtml()}
         <p class="hint">Everyone's payments and shares in ${viewCode()}. Share is what each person owes for the trip. Net is paid minus share: green gets money back, red owes. This summary is rounded to whole amounts; the table below and the exports keep centavos.</p>
         ${overallHtml()}
       </section>
 
-      <section>
+`,
+      settle: `      <section>
         <h2>Settle up</h2>
-        <div class="seg" role="group" aria-label="How to settle">
-          <button class="chip" data-act="smode" data-m="direct" aria-pressed="${state.settleMode==='direct'}">Per expense</button>
-          <button class="chip" data-act="smode" data-m="net" aria-pressed="${state.settleMode==='net'}">Fewest payments</button>
-        </div>
-        <p class="hint">${state.settleMode==='direct'
-          ? 'Each person pays the payer their share of that expense directly. Nothing is netted off.'
-          : 'The fewest payments that make everyone even. These net off what people owe each other, so a payment can go to someone who did not pay for that expense.'}</p>
-        ${settleHtml(transfers)}
+        <p class="hint">Each person pays the payer their share of that expense. Nothing is netted off.</p>
+        ${settleHtml()}
       </section>
 
-      <section>
+`,
+      export: `      <section>
         <h2>Export</h2>
-        <p class="hint">The Excel file has sheets for the summary, expenses, categories, the overall table, direct payments and the fewest-payments plan. It opens in Excel, Numbers and Google Sheets.</p>
+        <p class="hint">The Excel file has sheets for the summary, expenses, categories, the overall table and who pays whom. It opens in Excel, Numbers and Google Sheets.</p>
         <div class="foot" style="margin-top:0">
           <button class="btn small" data-act="xlsx">Export to Excel</button>
           <button class="btn ghost small" data-act="tsv">Copy for Google Sheets</button>
@@ -458,29 +557,46 @@ label.f .amt-row input{flex:1 1 auto;width:auto;min-width:0}
         <p class="note" id="exportMsg" role="status"></p>
       </section>
 
-      <div class="foot">
-        <button class="btn ghost small" data-act="backup">Backup</button>
-        <button class="btn ghost small" data-act="restore">Restore</button>
-        <button class="btn ghost small" data-act="clear">Start a new trip</button>
-        <input type="file" id="restoreFile" accept=".json,application/json" hidden>
-      </div>
-      <p class="note" id="footMsg" role="status">Everything is stored on this phone only. Tap Backup now and then to keep a copy.</p>`;
+`
+    };
+    const tabTitle = (t, sub) => `<header class="top"><div class="ver">Trip Split ${APP_VERSION} <span>${APP_DATE}</span></div><h1 class="tab-title">${t}</h1><div class="sub">${esc(sub)}</div></header>`;
+    const pillRow = curs().length>1 ? `<div class="pillrow"><div class="cpills light" role="group" aria-label="Show amounts in">${curs().map(c=>`<button class="cpill" data-act="view" data-c="${c}" aria-pressed="${c===viewCode()}">${c}</button>`).join('')}</div></div>` : '';
+    const dataSection = `<section>
+        <h2>Trip data</h2>
+        <div class="foot" style="margin-top:12px">
+          <button class="btn ghost small" data-act="backup">Backup</button>
+          <button class="btn ghost small" data-act="restore">Restore</button>
+          <button class="btn ghost small" data-act="clear">Start a new trip</button>
+          <input type="file" id="restoreFile" accept=".json,application/json" hidden>
+        </div>
+        <p class="note" id="footMsg" role="status">Everything is stored on this phone only. Tap Backup now and then to keep a copy.</p>
+      </section>`;
+    let body;
+    if(tab==='people') body = tabTitle('Travellers', state.name) + P.people + pillRow + P.balance;
+    else if(tab==='reports') body = tabTitle('Reports', state.name) + pillRow + P.cats + P.overall + P.settle;
+    else if(tab==='more') body = tabTitle('More', state.name) + P.currencies + P.export + dataSection;
+    else body = P.header + P.hero + P.tiles + `<button class="add-big" data-act="add">${IC.plus}<span>Add expense</span></button>` + P.expenses;
+    const tabBtn = (id, label, icon) => `<button class="tab" data-act="tab" data-t="${id}" aria-current="${tab===id?'page':'false'}"><span class="ti">${icon}</span><span>${label}</span></button>`;
+    app.innerHTML = body + `
+      <nav class="tabbar" aria-label="Main">
+        ${tabBtn('home','Home',IC.home)}
+        ${tabBtn('people','Travellers',IC.users)}
+        ${tabBtn('reports','Reports',IC.chart)}
+        ${tabBtn('more','More',IC.dots)}
+      </nav>`;
   }
 
   function flash(id, text){ const el = document.getElementById(id); if(el) el.textContent = text; }
 
   app.addEventListener('input', e => {
     const t = e.target;
-    if(t.dataset.ff){ form[t.dataset.ff] = t.value; if(t.dataset.ff==='amount'){ const each=app.querySelector('.each'); if(each) each.textContent = eachText(); } }
+    if(t.name==='n' && t.closest('[data-form="rename"]')) renameDraft = t.value;
     if(t.dataset.rate){ const v = parseFloat(t.value); if(v>0){ state.rates[t.dataset.rate] = v; persist(); refreshKeepFocus(t); } }
     if(t.dataset.f==='name'){ state.name = t.value; persist(); document.title = t.value || 'Trip Split'; updateSaveBar(); }
   });
   app.addEventListener('change', e => {
     const t = e.target;
     if(t.id==='restoreFile'){ restore(t); return; }
-    if(t.dataset.ff==='payer') form.payer = t.value;
-    if(t.dataset.ff==='cat'){ form.cat = t.value; if(t.value!=='__new') state.lastCat = t.value; render(); if(t.value==='__new'){ const n = app.querySelector('[data-ff="catNew"]'); if(n) n.focus(); } }
-    if(t.dataset.ff==='cur'){ form.cur = t.value; state.lastCur = t.value; render(); }
     if(t.dataset.f==='currency') changeBase(t.value);
     if(t.dataset.f==='addcur' && t.value){ state.rates[t.value] = 1; persist(); render(); const n = app.querySelector(`[data-rate="${t.value}"]`); if(n){ n.focus(); n.select(); } }
   });
@@ -519,6 +635,13 @@ label.f .amt-row input{flex:1 1 auto;width:auto;min-width:0}
   app.addEventListener('submit', e => {
     e.preventDefault();
     const f = e.target.dataset.form;
+    if(f==='rename'){
+      const nn = e.target.n.value.trim(); renameDraft = e.target.n.value;
+      if(!nn){ peopleMsg = 'Type a name.'; render(); focusRename(); return; }
+      if(nn===renaming){ renaming = null; peopleMsg = ''; render(); return; }
+      if(state.people.some(p => p!==renaming && p.toLowerCase()===nn.toLowerCase())){ peopleMsg = nn+' is already on the list.'; render(); focusRename(); return; }
+      renamePerson(renaming, nn); renaming = null; peopleMsg = ''; persist(); render(); return;
+    }
     if(f==='person'){
       const name = e.target.p.value.trim();
       peopleMsg = '';
@@ -530,18 +653,6 @@ label.f .amt-row input{flex:1 1 auto;width:auto;min-width:0}
       persist(); render();
       const inp = app.querySelector('.add-person input'); if(inp) inp.focus();
     }
-    if(f==='expense'){
-      const amt = toCents(form.amount);
-      let cat = form.cat==='__new' ? (form.catNew||'').trim() : form.cat;
-      if(!cat) return flash('formMsg','Name the new category, or pick one from the list.');
-      cat = cats().find(c=>c.toLowerCase()===cat.toLowerCase()) || (cat.charAt(0).toUpperCase()+cat.slice(1));
-      if(!(amt>0)) return flash('formMsg','Enter an amount above zero.');
-      if(!form.split.length) return flash('formMsg','Pick at least one person to share it.');
-      const data = {cat, desc:form.desc.trim(), amount:amt/100, cur:form.cur, payer:form.payer, split:state.people.filter(p=>form.split.includes(p))};
-      if(editingId){ Object.assign(state.expenses.find(x=>x.id===editingId), data); editingId = null; }
-      else state.expenses.push({id:'e'+Date.now().toString(36), ...data});
-      state.lastCat = cat; form = blankForm(); persist(); render();
-    }
   });
 
   app.addEventListener('click', e => {
@@ -549,29 +660,24 @@ label.f .amt-row input{flex:1 1 auto;width:auto;min-width:0}
     const act = t.dataset.act, p = t.dataset.p;
     if(act==='rm-person'){
       e.stopPropagation();
+      if(renaming===p) renaming = null;
       const n = state.expenses.filter(x=>x.payer===p || x.split.includes(p)).length;
       if(n){ peopleMsg = p+' is in '+n+' expense'+(n>1?'s':'')+'. Edit or delete those first.'; render(); return; }
-      state.people = state.people.filter(x=>x!==p); form.split = form.split.filter(x=>x!==p);
+      state.people = state.people.filter(x=>x!==p); form.split = form.split.filter(x=>x!==p); if(state.lastPayer===p) delete state.lastPayer;
       if(form.payer===p) form.payer = state.people[0]||''; peopleMsg=''; persist(); render();
     }
-    else if(act==='toggle'){ form.split = form.split.includes(p) ? form.split.filter(x=>x!==p) : [...form.split,p]; render(); }
-    else if(act==='all'){ form.split = [...state.people]; render(); }
-    else if(act==='none'){ form.split = []; render(); }
-    else if(act==='edit' && !readOnly){
-      const x = state.expenses.find(z=>z.id===t.dataset.id);
-      editingId = x.id; form = {cat:x.cat, catNew:'', desc:x.desc||'', amount:String(x.amount), cur:x.cur, payer:x.payer, split:[...x.split]}; render();
-      app.querySelector('.exp-form').scrollIntoView({behavior: matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth', block:'start'});
-    }
-    else if(act==='cancel'){ editingId=null; form=blankForm(); render(); }
-    else if(act==='del-exp'){ state.expenses = state.expenses.filter(x=>x.id!==editingId); editingId=null; form=blankForm(); persist(); render(); }
+    else if(act==='edit' && !readOnly) openSheet(t.dataset.id);
+    else if(act==='add') openSheet();
+    else if(act==='rename-person'){ renaming = p; renameDraft = p; peopleMsg = ''; render(); focusRename(); }
+    else if(act==='rename-cancel'){ renaming = null; peopleMsg = ''; render(); }
     else if(act==='row'){ openRows.has(p)?openRows.delete(p):openRows.add(p); render(); }
     else if(act==='clear'){
-      if(!confirm('Remove all travelers and expenses and start over?')) return;
-      state = {name:'New trip', currency:state.currency, rates:state.rates, view:state.view, settleMode:state.settleMode, people:[], expenses:[]};
+      if(!confirm('Remove all travellers and expenses and start over?')) return;
+      state = {name:'New trip', currency:state.currency, rates:state.rates, view:state.view, people:[], expenses:[]};
       editingId=null; form=blankForm(); openRows.clear(); persist(); render();
     }
     else if(act==='share') shareSummary();
-    else if(act==='smode'){ state.settleMode = t.dataset.m; persist(); render(); }
+    else if(act==='tab'){ if(tab===t.dataset.t){ window.scrollTo({top:0,behavior:'smooth'}); return; } tab = t.dataset.t; renaming = null; peopleMsg = ''; render(); window.scrollTo(0,0); }
     else if(act==='xlsx') exportXlsx();
     else if(act==='tsv') copyForSheets();
     else if(act==='backup') backup();
@@ -585,8 +691,147 @@ label.f .amt-row input{flex:1 1 auto;width:auto;min-width:0}
     }
   });
   app.addEventListener('keydown', e => {
+    if(e.key==='Escape' && renaming!==null){ renaming = null; peopleMsg = ''; render(); return; }
     if((e.key==='Enter'||e.key===' ') && e.target.matches('.exp,.bal-row')){ e.preventDefault(); e.target.click(); }
   });
+
+  // ---- rename a traveller everywhere they appear
+  function renamePerson(oldName, newName){
+    const sw = p => p===oldName ? newName : p;
+    state.people = state.people.map(sw);
+    state.expenses.forEach(e => { e.payer = sw(e.payer); e.split = e.split.map(sw); });
+    if(state.lastPayer===oldName) state.lastPayer = newName;
+    form.split = form.split.map(sw); form.payer = sw(form.payer);
+    if(openRows.has(oldName)){ openRows.delete(oldName); openRows.add(newName); }
+  }
+  function focusRename(){ const i = app.querySelector('.rename-row input'); if(i){ i.focus(); i.select(); } }
+
+  // ---- quick-add sheet: amount first, remembers payer / category / currency
+  const sheetRoot = document.getElementById('sheet-root');
+  let sheetOpen = false, sheetPeopleStep = false, sheetMsg = '', sheetOk = false, addedCount = 0;
+  const sheetDirty = () => !editingId && (toCents(form.amount) > 0 || form.desc.trim() !== '');
+  function focusIn(sel){ const el = sheetRoot.querySelector(sel); if(el){ el.focus(); } }
+  function openSheet(id){
+    editingId = id || null;
+    if(id){
+      const x = state.expenses.find(z => z.id===id); if(!x) return;
+      form = {cat:x.cat, catNew:'', desc:x.desc||'', amount:String(x.amount), cur:x.cur, payer:x.payer, split:[...x.split]};
+    } else form = blankForm();
+    sheetOpen = true; sheetPeopleStep = !id && state.people.length===0; sheetMsg = ''; sheetOk = false; addedCount = 0;
+    document.documentElement.classList.add('noscroll'); app.inert = true;
+    renderSheet({animate:true, focus: sheetPeopleStep ? '.add-person input' : '[data-ff="amount"]'});
+  }
+  function closeSheet(force){
+    if(!force && sheetDirty() && !confirm('Discard this expense?')) return;
+    sheetOpen = false; editingId = null; app.inert = false;
+    document.documentElement.classList.remove('noscroll');
+    renderSheet(); render();
+  }
+  function renderSheet(o){
+    o = o || {};
+    if(!sheetOpen){ sheetRoot.innerHTML = ''; return; }
+    const old = sheetRoot.querySelector('.sheet-body'), keep = old ? old.scrollTop : 0;
+    const head = `<div class="sheet-head"><h2>${sheetPeopleStep ? 'Who is going?' : editingId ? 'Edit expense' : 'Add expense'}</h2><button type="button" class="x-btn" data-act="sheet-close" aria-label="Close">&times;</button></div>`;
+    let inner;
+    if(sheetPeopleStep){
+      inner = `<p class="hint">Add everyone who might pay or share a cost. You can change this later in Travellers.</p>
+        <form class="add-person" data-form="sperson"><input name="p" placeholder="Add a name" aria-label="Add a traveller" autocomplete="off"><button class="btn small ghost">Add</button></form>
+        <div class="people" style="margin-top:12px">${state.people.map(p=>`<span class="chip" tabindex="-1">${esc(p)}<button type="button" class="x" data-act="rm-sperson" data-p="${esc(p)}" aria-label="Remove ${esc(p)}">×</button></span>`).join('')}</div>
+        <div class="msg" role="status">${esc(peopleMsg)}</div>
+        <div class="sheet-actions"><button type="button" class="btn" data-act="speople-done" ${state.people.length?'':'disabled'}>Continue</button></div>`;
+    } else {
+      inner = `<form class="sheet-form" data-form="sexpense">
+        <div class="amt-big">
+          <select class="cur-sel" data-ff="cur" aria-label="Currency">${curs().map(c=>`<option ${c===form.cur?'selected':''}>${c}</option>`).join('')}</select>
+          <input class="amount-big" data-ff="amount" value="${esc(form.amount)}" inputmode="decimal" placeholder="0.00" autocomplete="off" enterkeyhint="done" aria-label="Amount">
+        </div>
+        <div class="each" id="eachText">${eachText()}</div>
+        <div class="sec s1">
+          <div class="sec-head"><span class="sec-num">1</span><span class="sec-title">Category</span><span class="sec-hint">pick one</span></div>
+          <div class="pick">${cats().map(c=>`<button type="button" class="chip" data-act="scat" data-c="${esc(c)}" aria-pressed="${c===form.cat}">${esc(c)}</button>`).join('')}<button type="button" class="chip" data-act="scat" data-c="__new" aria-pressed="${form.cat==='__new'}">+ New</button></div>
+          ${form.cat==='__new' ? `<input class="sh-in" data-ff="catNew" value="${esc(form.catNew)}" placeholder="Tours, gifts, insurance" autocomplete="off" aria-label="New category name">` : ''}
+          <input class="sh-in" data-ff="desc" value="${esc(form.desc)}" placeholder="Details, optional (Din Tai Fung)" autocomplete="off" aria-label="Details">
+        </div>
+        <div class="sec s2">
+          <div class="sec-head"><span class="sec-num">2</span><span class="sec-title">Paid by</span><span class="sec-hint">pick one</span></div>
+          <div class="pick">${state.people.map(p=>`<button type="button" class="chip" data-act="spayer" data-p="${esc(p)}" aria-pressed="${p===form.payer}">${esc(p)}</button>`).join('')}</div>
+        </div>
+        <div class="sec s3">
+          <div class="sec-head"><span class="sec-num">3</span><span class="sec-title">Split among</span><span class="sec-links"><button type="button" class="linkbtn" data-act="all">Everyone</button> <button type="button" class="linkbtn" data-act="none">Clear</button></span></div>
+          <div class="pick">${state.people.map(p=>`<button type="button" class="chip" data-act="toggle" data-p="${esc(p)}" aria-pressed="${form.split.includes(p)}">${esc(p)}</button>`).join('')}</div>
+        </div>
+        <div class="sheet-foot">
+          <div class="msg${sheetOk?' ok':''}" id="formMsg" role="status">${esc(sheetMsg)}</div>
+          <div class="sheet-actions">
+            ${editingId ? `<button type="button" class="btn ghost" data-act="del-exp">Delete</button><button class="btn">Update</button>`
+                        : `<button type="button" class="btn ghost" data-act="save-more">Save &amp; add another</button><button class="btn">Save</button>`}
+          </div>
+        </div>
+      </form>`;
+    }
+    sheetRoot.innerHTML = `<div class="scrim${o.animate?' enter':''}" data-act="sheet-scrim"></div><div class="sheet${o.animate?' enter':''}" role="dialog" aria-modal="true" aria-label="${editingId?'Edit expense':'Add expense'}">${head}<div class="sheet-body">${inner}</div></div>`;
+    const nb = sheetRoot.querySelector('.sheet-body'); if(nb) nb.scrollTop = keep;
+    if(o.focus) focusIn(o.focus);
+  }
+  function flashSheet(text, ok){ sheetMsg = text; sheetOk = !!ok; const el = sheetRoot.querySelector('#formMsg'); if(el){ el.textContent = text; el.classList.toggle('ok', !!ok); } }
+  function saveExpense(more){
+    const amt = toCents(form.amount);
+    let cat = form.cat==='__new' ? (form.catNew||'').trim() : form.cat;
+    if(!(amt>0)) return flashSheet('Enter an amount above zero.');
+    if(!cat) return flashSheet('Name the new category, or pick one from the list.');
+    if(!form.split.length) return flashSheet('Pick at least one person to share it.');
+    cat = cats().find(c=>c.toLowerCase()===cat.toLowerCase()) || (cat.charAt(0).toUpperCase()+cat.slice(1));
+    const data = {cat, desc:form.desc.trim(), amount:amt/100, cur:form.cur, payer:form.payer, split:state.people.filter(p=>form.split.includes(p))};
+    if(editingId) Object.assign(state.expenses.find(x=>x.id===editingId), data);
+    else state.expenses.push({id:'e'+Date.now().toString(36), ...data});
+    state.lastCat = cat; state.lastCur = form.cur; state.lastPayer = form.payer;
+    persist();
+    if(editingId || !more){ closeSheet(true); return; }
+    addedCount++;
+    const shown = data.desc ? cat+': '+data.desc : cat;
+    form.cat = cat; form.catNew = ''; form.amount = ''; form.desc = '';     // payer, currency and split stay for the next one
+    sheetMsg = 'Saved '+shown+' ('+fmtIn(Math.round(amt), data.cur)+'). '+addedCount+' added so far.'; sheetOk = true;
+    render(); renderSheet({focus:'[data-ff="amount"]'});
+  }
+  sheetRoot.addEventListener('input', e => {
+    const t = e.target; if(!t.dataset.ff) return;
+    form[t.dataset.ff] = t.value;
+    if(t.dataset.ff==='amount'){ const el = sheetRoot.querySelector('#eachText'); if(el) el.textContent = eachText(); }
+  });
+  sheetRoot.addEventListener('change', e => {
+    const t = e.target;
+    if(t.dataset.ff==='cur'){ form.cur = t.value; state.lastCur = t.value; persist(); renderSheet({focus:'[data-ff="amount"]'}); }
+  });
+  sheetRoot.addEventListener('submit', e => {
+    e.preventDefault();
+    const f = e.target.dataset.form;
+    if(f==='sexpense') saveExpense(false);
+    if(f==='sperson'){
+      const name = e.target.p.value.trim(); peopleMsg = '';
+      if(!name) return;
+      if(state.people.some(p=>p.toLowerCase()===name.toLowerCase())){ peopleMsg = name+' is already on the list.'; renderSheet({focus:'.add-person input'}); return; }
+      state.people.push(name); form.split.push(name); if(!form.payer) form.payer = name;
+      persist(); render(); renderSheet({focus:'.add-person input'});
+    }
+  });
+  sheetRoot.addEventListener('click', e => {
+    const t = e.target.closest('[data-act]'); if(!t) return;
+    const act = t.dataset.act, p = t.dataset.p;
+    if(act==='sheet-close' || act==='sheet-scrim') closeSheet();
+    else if(act==='scat'){ form.cat = t.dataset.c; if(form.cat!=='__new') state.lastCat = form.cat; renderSheet({focus: form.cat==='__new' ? '[data-ff="catNew"]' : null}); }
+    else if(act==='spayer'){ form.payer = p; renderSheet(); }
+    else if(act==='toggle'){ form.split = form.split.includes(p) ? form.split.filter(x=>x!==p) : [...form.split,p]; renderSheet(); }
+    else if(act==='all'){ form.split = [...state.people]; renderSheet(); }
+    else if(act==='none'){ form.split = []; renderSheet(); }
+    else if(act==='save-more') saveExpense(true);
+    else if(act==='del-exp'){
+      if(!confirm('Delete this expense?')) return;
+      state.expenses = state.expenses.filter(x=>x.id!==editingId); persist(); closeSheet(true);
+    }
+    else if(act==='rm-sperson'){ state.people = state.people.filter(x=>x!==p); form.split = form.split.filter(x=>x!==p); if(form.payer===p) form.payer = state.people[0]||''; peopleMsg=''; persist(); render(); renderSheet(); }
+    else if(act==='speople-done'){ sheetPeopleStep = false; form = blankForm(); renderSheet({focus:'[data-ff="amount"]'}); }
+  });
+  document.addEventListener('keydown', e => { if(e.key==='Escape' && sheetOpen) closeSheet(); });
 
   function note(text, id){ const el = document.getElementById(id || 'footMsg'); if(el) el.textContent = text; }
 
@@ -610,19 +855,14 @@ label.f .amt-row input{flex:1 1 auto;width:auto;min-width:0}
   const fileBase = () => (state.name||'trip').replace(/[^\w]+/g,'-').replace(/^-|-$/g,'') || 'trip';
 
   function summaryText(){
-    const {per, transfers} = compute();
+    const {per} = compute();
     const total = state.expenses.reduce((n,e)=>n+baseCents(e),0);
     let t = state.name+'\n'+fmt(total)+' total\n\nBalances\n';
     state.people.forEach(p => { const n = per[p].net;
       t += p+': '+(n>0?'gets back '+fmt(n):n<0?'pays '+fmt(-n):'even')+'\n'; });
-    if(state.settleMode==='direct'){
-      const g = directPayments();
-      t += '\nWho pays whom, per expense\n';
-      t += g.length ? g.map(x => x.title+' (paid by '+x.payer+')\n'+x.items.map(i => '  '+i.from+' pays '+i.to+' '+fmt(i.c)).join('\n')).join('\n\n') : 'Everyone only paid their own share.';
-    } else {
-      t += '\nSettle up\n';
-      t += transfers.length ? transfers.map(x => x.from+' pays '+x.to+' '+fmt(x.v)).join('\n') : 'Everyone is even.';
-    }
+    const g = directPayments();
+    t += '\nWho pays whom, per expense\n';
+    t += g.length ? g.map(x => x.title+' (paid by '+x.payer+')\n'+x.items.map(i => '  '+i.from+' pays '+i.to+' '+fmt(i.c)).join('\n')).join('\n\n') : 'Everyone only paid their own share.';
     return t;
   }
   async function shareSummary(){
@@ -642,8 +882,8 @@ label.f .amt-row input{flex:1 1 auto;width:auto;min-width:0}
   async function copyForSheets(){
     if(!state.expenses.length){ note('Add an expense first.', 'exportMsg'); return; }
     const d = tableData(), cur = viewCode(), f = c => toNum(c).toFixed(2);
-    const lines = [['Expense','Paid by','Amount ('+cur+')', ...d.people]];
-    d.rows.forEach(r => lines.push([r.label, r.payer, r.amount.toFixed(2), ...r.cells.map(f)]));
+    const lines = [['Expense','Paid by','Amount paid ('+cur+')', ...d.people]];
+    d.rows.forEach(r => { lines.push([r.label, r.payer, r.amount.toFixed(2), ...r.paidCells.map(f)]); lines.push(['Divided by '+r.n, '', '', ...r.shareCells.map(c=>f(-c))]); });
     lines.push(['Paid','','', ...d.people.map(p=>f(d.per[p].paid))]);
     lines.push(['Share of costs','','', ...d.people.map(p=>f(d.per[p].owe))]);
     lines.push(['Net','','', ...d.people.map(p=>f(d.per[p].net))]);
@@ -725,7 +965,7 @@ label.f .amt-row input{flex:1 1 auto;width:auto;min-width:0}
     return zipStore(files.map(([name,text]) => ({name, data: enc.encode(text)})));
   }
   function sheetsData(){
-    const d = tableData(), cur = viewCode(), {per, transfers, people, rows} = d, n = toNum;
+    const d = tableData(), cur = viewCode(), {per, people, rows} = d, n = toNum;
     const H = v => ({v, s:1}), N = v => ({v, s:2}), NB = v => ({v, s:3}), B = v => ({v, s:4});
     const tot = k => people.reduce((a,p)=>a+per[p][k],0);
     const total = state.expenses.reduce((a,e)=>a+baseCents(e),0);
@@ -739,17 +979,16 @@ label.f .amt-row input{flex:1 1 auto;width:auto;min-width:0}
     const cats = [[H('Category'), H('Amount ('+cur+')'), H('Share of trip')],
       ...Object.entries(byCat).sort((a,b)=>b[1]-a[1]).map(([c,v]) => [c, N(n(v)), {v:total?+(v/total).toFixed(4):0, s:5}]),
       [B('Total'), NB(n(total))]];
-    const matrix = [[H('Expense'), H('Paid by'), H('Amount ('+cur+')'), ...people.map(H)],
-      ...rows.map(r => [r.label, r.payer, N(r.amount), ...r.cells.map(c=>N(n(c)))]),
+    const matrix = [[H('Expense'), H('Paid by'), H('Amount paid ('+cur+')'), ...people.map(H)],
+      ...rows.flatMap(r => [[r.label, r.payer, N(r.amount), ...r.paidCells.map(c=>N(n(c)))],
+                            ['Divided by '+r.n, '', '', ...r.shareCells.map(c=>N(-n(c)))]]),
       [B('Paid'),'','', ...people.map(p=>NB(n(per[p].paid)))],
       [B('Share of costs'),'','', ...people.map(p=>NB(n(per[p].owe)))],
       [B('Net (+ gets back)'),'','', ...people.map(p=>NB(n(per[p].net)))]];
-    const settle = [[H('From'), H('To'), H('Amount ('+cur+')')],
-      ...(transfers.length ? transfers.map(t => [t.from, t.to, N(n(t.v))]) : [['Everyone is even','','']])];
     const direct = [[H('Expense'), H('From'), H('To'), H('Amount ('+cur+')')]];
     directPayments().forEach(g => g.items.forEach(i => direct.push([g.title, i.from, i.to, N(n(i.c))])));
     if(direct.length===1) direct.push(['Everyone only paid their own share','','','']);
-    return [{name:'Summary', rows:summary},{name:'Expenses', rows:expenses},{name:'By category', rows:cats},{name:'Who paid for what', rows:matrix},{name:'Direct payments', rows:direct},{name:'Fewest payments', rows:settle}];
+    return [{name:'Summary', rows:summary},{name:'Expenses', rows:expenses},{name:'By category', rows:cats},{name:'Who paid for what', rows:matrix},{name:'Direct payments', rows:direct}];
   }
   function exportXlsx(){
     if(!state.expenses.length){ note('Add an expense first.', 'exportMsg'); return; }
