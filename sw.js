@@ -1,5 +1,5 @@
 // Keeps the app working without internet (for example abroad without roaming).
-const CACHE = 'tripsplit-v3';
+const CACHE = 'tripsplit-v6';
 const ASSETS = ['./', './index.html', './apple-touch-icon.png'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()));

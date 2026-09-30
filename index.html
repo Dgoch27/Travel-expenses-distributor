@@ -44,6 +44,8 @@ button,input,select{font:inherit;color:inherit}
 header.top{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:flex-end;justify-content:space-between;margin:10px 0 22px}
 .trip-name{font-family:var(--display);font-weight:800;font-size:clamp(30px,8vw,46px);line-height:1.05;letter-spacing:-.02em;border:0;background:transparent;padding:2px 0;width:100%;min-width:0;border-bottom:2px dashed transparent}
 .trip-name:hover,.trip-name:focus{border-bottom-color:var(--line);outline:none}
+.ver{font-size:12px;font-weight:600;color:var(--blue);letter-spacing:.02em}
+.ver span{color:var(--muted);font-weight:400;margin-left:4px}
 .title-col{flex:1 1 320px;min-width:0}
 .sub{color:var(--muted);font-size:14px;margin-top:4px}
 .savebar{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--muted)}
@@ -139,6 +141,17 @@ table.grid{border-collapse:separate;border-spacing:0;width:100%;font-size:14px;f
 .grid.fit th:last-child,.grid.fit td:last-child{padding-right:14px}
 @media (max-width:400px){.grid.fit{font-size:13px}.grid.fit th,.grid.fit td{padding:10px 5px}.grid.fit th:first-child{padding-left:12px}.grid.fit th:last-child,.grid.fit td:last-child{padding-right:12px}}
 @media (max-width:340px){.grid.fit{font-size:12px}.grid.fit th,.grid.fit td{padding:10px 4px}}
+.eb{padding:14px 16px;border-top:1px solid var(--line)}
+.eb:first-child{border-top:0}
+.eb-top{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.eb-top b{min-width:0;overflow-wrap:anywhere}
+.eb-amt{font-family:var(--display);font-weight:800;font-size:19px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.eb-sub{color:var(--muted);font-size:13px;margin:2px 0 10px}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px}
+.pc{display:grid;gap:1px;min-width:0;border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--paper)}
+.pn{color:var(--muted);font-size:13px;overflow-wrap:anywhere}
+.pv{font-family:var(--display);font-weight:700;font-size:16px;font-variant-numeric:tabular-nums}
+.pv.z{color:var(--muted)}
 .dp{border-top:1px solid var(--line)}
 .dp:first-child{border-top:0}
 .dp-head{padding:14px 16px 2px;display:grid;gap:1px}
@@ -181,8 +194,9 @@ label.f .amt-row input{flex:1 1 auto;width:auto;min-width:0}
 <div id="app" class="wrap"></div>
 <script id="app-script">
 (function(){
+  const APP_VERSION = 'v6', APP_DATE = '30 Sep 2026';   // keep in step with CACHE in sw.js
   const STORE_KEY = 'tripsplit:v1';
-  const DEFAULT_STATE = {name:'Trip expenses', currency:'PHP', rates:{TWD:1.9}, view:'PHP', settleMode:'direct', people:[], expenses:[]};
+  const DEFAULT_STATE = {name:'Trip expenses', currency:'PHP', rates:{TWD:1.9}, view:'PHP', people:[], expenses:[]};
   const LEGACY = {airfare:'Flights',flight:'Flights',flights:'Flights',hotel:'Hotel',food:'Food',taxi:'Transport'};
   function normalize(x){
     if(!x || !Array.isArray(x.people) || !Array.isArray(x.expenses)) return null;
@@ -190,7 +204,7 @@ label.f .amt-row input{flex:1 1 auto;width:auto;min-width:0}
     if(!x.currency) x.currency = 'PHP';
     if(!x.rates || typeof x.rates!=='object') x.rates = {};
     if(!x.view || (x.view!==x.currency && !x.rates[x.view])) x.view = x.currency;
-    if(x.settleMode!=='net' && x.settleMode!=='direct') x.settleMode = 'direct';
+    delete x.settleMode;
     x.expenses.forEach(e => {
       if(!e.cat){ const k=(e.desc||'').trim().toLowerCase(); if(LEGACY[k]){ e.cat=LEGACY[k]; e.desc=''; } else e.cat='Other'; }
       if(!e.cur) e.cur = x.currency;
@@ -247,17 +261,7 @@ label.f .amt-row input{flex:1 1 auto;width:auto;min-width:0}
       Object.entries(sh).forEach(([p,v]) => { if(per[p]){ per[p].owe += v; per[p].lines.push({label:title(e)+' share (1 of '+e.split.length+')', v:-v}); } });
     });
     state.people.forEach(p => per[p].net = per[p].paid - per[p].owe);
-    // Settle: largest debtor pays largest creditor until everyone is even.
-    const cred = state.people.filter(p=>per[p].net>0).map(p=>({p,v:per[p].net})).sort((a,b)=>b.v-a.v);
-    const debt = state.people.filter(p=>per[p].net<0).map(p=>({p,v:-per[p].net})).sort((a,b)=>b.v-a.v);
-    const transfers = []; let i=0,j=0;
-    while(i<debt.length && j<cred.length){
-      const x = Math.min(debt[i].v, cred[j].v);
-      if(x>0) transfers.push({from:debt[i].p, to:cred[j].p, v:x});
-      debt[i].v -= x; cred[j].v -= x;
-      if(debt[i].v===0) i++; if(cred[j].v===0) j++;
-    }
-    return {per, transfers};
+    return {per};
   }
 
   const viewCode = () => state.view && rateOf(state.view) ? state.view : state.currency;
@@ -275,14 +279,14 @@ label.f .amt-row input{flex:1 1 auto;width:auto;min-width:0}
 
   // One table of numbers used by the screen, the Excel file and the Google Sheets copy.
   function tableData(){
-    const {per, transfers} = compute();
+    const {per} = compute();
     const people = state.people;
     const rows = state.expenses.map(e => {
       const sh = shares(e), cents = baseCents(e);
-      return {label:title(e), sub:'Paid by '+e.payer+', '+origTxt(e), payer:e.payer, amount:toNum(cents),
-              cells: people.map(p => (p===e.payer ? cents : 0) - (sh[p]||0))};
+      return {label:title(e), sub:'Paid by '+e.payer+', '+origTxt(e), orig:origTxt(e), cur:e.cur, payer:e.payer, amount:toNum(cents), paid:cents, shares:sh, n:e.split.length,
+              cells: people.map(p => sh[p]||0)};
     });
-    return {per, transfers, people, rows};
+    return {per, people, rows};
   }
   function overallHtml(){
     const d = tableData(), {per, people, rows} = d;
@@ -291,17 +295,18 @@ label.f .amt-row input{flex:1 1 auto;width:auto;min-width:0}
     const summary = `<div class="tbl-wrap"><table class="grid fit"><thead><tr><th>Person</th><th>Paid</th><th>Share</th><th>Net</th></tr></thead>
       <tbody>${people.map(p=>`<tr><th scope="row">${esc(p)}</th><td>${nf0(per[p].paid)}</td><td>${nf0(per[p].owe)}</td><td class="${tone0(per[p].net)}">${sgn0(per[p].net)}</td></tr>`).join('')}</tbody>
       <tfoot><tr><th scope="row">Total</th><td>${nf0(tot('paid'))}</td><td>${nf0(tot('owe'))}</td><td>${sgn0(tot('net'))}</td></tr></tfoot></table></div>`;
-    const matrix = `<div class="tbl-wrap"><table class="grid"><thead><tr><th>Expense</th>${people.map(p=>`<th>${esc(p)}</th>`).join('')}</tr></thead>
-      <tbody>${rows.map(r=>`<tr><th scope="row">${esc(r.label)}<span class="gsub">${esc(r.sub)}</span></th>${r.cells.map(c=>`<td class="${tone(c)}">${sgn(c)}</td>`).join('')}</tr>`).join('')}</tbody>
-      <tfoot>
-        <tr><th scope="row">Paid</th>${people.map(p=>`<td>${nf(per[p].paid)}</td>`).join('')}</tr>
-        <tr><th scope="row">Share of costs</th>${people.map(p=>`<td>${nf(per[p].owe)}</td>`).join('')}</tr>
-        <tr><th scope="row">Net</th>${people.map(p=>`<td class="${tone(per[p].net)}">${sgn(per[p].net)}</td>`).join('')}</tr>
-      </tfoot></table></div>`;
+    const blocks = rows.map(r => {
+      const foreign = r.cur!==viewCode() ? ' ('+esc(r.orig)+')' : '';
+      const cell = p => { const sh = r.shares[p]||0;
+        return `<div class="pc"><span class="pn">${esc(p)}</span><span class="pv${sh?'':' z'}">${sh?nf(sh):'–'}</span></div>`; };
+      return `<div class="eb"><div class="eb-top"><b>${esc(r.label)}</b><span class="eb-amt">${fmt(r.paid)}</span></div>
+        <div class="eb-sub">Paid by ${esc(r.payer)}${foreign}. Divided by ${r.n}, ${fmt(Math.round(r.paid/r.n))} each.</div>
+        <div class="pgrid">${people.map(cell).join('')}</div></div>`;
+    }).join('');
     return `<div class="card">${summary}</div>
       <h3 class="h3">Who paid for what</h3>
-      <p class="hint">Each cell is what that person paid minus their share of that expense. Every column adds up to that person's net. Swipe sideways to see everyone.</p>
-      <div class="card">${matrix}</div>`;
+      <p class="hint">The full amount paid is at the top of each expense. Each box is that person's share of it, including the person who paid.</p>
+      <div class="card">${blocks}</div>`;
   }
 
   // Direct payments: each person pays the payer their share of that expense. Nothing is netted off.
@@ -313,17 +318,15 @@ label.f .amt-row input{flex:1 1 auto;width:auto;min-width:0}
     }).filter(g => g.items.length);
   }
   const payRow = (from, to, amtHtml) => `<li><span class="t-names"><b>${esc(from)}</b><span class="arrow">pays</span><b>${esc(to)}</b></span><span class="t-amt">${amtHtml}</span></li>`;
-  function settleHtml(transfers){
+  function settleHtml(){
     if(!state.expenses.length) return '<div class="card empty">Nothing to settle yet.</div>';
-    if(state.settleMode==='net')
-      return transfers.length ? `<ul class="transfers card">${transfers.map(t=>payRow(t.from,t.to,fmt(t.v))).join('')}</ul>` : '<div class="card empty">Everyone is even.</div>';
     const g = directPayments();
     if(!g.length) return '<div class="card empty">Everyone only paid their own share.</div>';
     return `<div class="card">${g.map(x=>`<div class="dp"><div class="dp-head"><b>${esc(x.title)}</b><span>Paid by ${esc(x.payer)}, ${esc(x.orig)}</span></div><ul class="transfers">${x.items.map(i=>payRow(i.from,i.to,fmt(i.c))).join('')}</ul></div>`).join('')}</div>`;
   }
 
   function render(){
-    const {per, transfers} = compute();
+    const {per} = compute();
     const total = state.expenses.reduce((s,e)=>s+baseCents(e),0);
     const maxAbs = Math.max(1, ...state.people.map(p=>Math.abs(per[p].net)));
     const amt = toCents(form.amount);
@@ -337,6 +340,7 @@ label.f .amt-row input{flex:1 1 auto;width:auto;min-width:0}
     app.innerHTML = `
       <header class="top">
         <div class="title-col">
+          <div class="ver">Trip Split ${APP_VERSION} <span>${APP_DATE}</span></div>
           <input class="trip-name" data-f="name" value="${esc(state.name)}" aria-label="Trip name" ${readOnly?'readonly':''}>
           <div class="sub">${state.people.length} travelers, ${state.expenses.length} expenses, ${fmt(total)} total</div>
         </div>
@@ -437,19 +441,13 @@ label.f .amt-row input{flex:1 1 auto;width:auto;min-width:0}
 
       <section>
         <h2>Settle up</h2>
-        <div class="seg" role="group" aria-label="How to settle">
-          <button class="chip" data-act="smode" data-m="direct" aria-pressed="${state.settleMode==='direct'}">Per expense</button>
-          <button class="chip" data-act="smode" data-m="net" aria-pressed="${state.settleMode==='net'}">Fewest payments</button>
-        </div>
-        <p class="hint">${state.settleMode==='direct'
-          ? 'Each person pays the payer their share of that expense directly. Nothing is netted off.'
-          : 'The fewest payments that make everyone even. These net off what people owe each other, so a payment can go to someone who did not pay for that expense.'}</p>
-        ${settleHtml(transfers)}
+        <p class="hint">Each person pays the payer their share of that expense. Nothing is netted off.</p>
+        ${settleHtml()}
       </section>
 
       <section>
         <h2>Export</h2>
-        <p class="hint">The Excel file has sheets for the summary, expenses, categories, the overall table, direct payments and the fewest-payments plan. It opens in Excel, Numbers and Google Sheets.</p>
+        <p class="hint">The Excel file has sheets for the summary, expenses, categories, the overall table and who pays whom. It opens in Excel, Numbers and Google Sheets.</p>
         <div class="foot" style="margin-top:0">
           <button class="btn small" data-act="xlsx">Export to Excel</button>
           <button class="btn ghost small" data-act="tsv">Copy for Google Sheets</button>
@@ -567,11 +565,10 @@ label.f .amt-row input{flex:1 1 auto;width:auto;min-width:0}
     else if(act==='row'){ openRows.has(p)?openRows.delete(p):openRows.add(p); render(); }
     else if(act==='clear'){
       if(!confirm('Remove all travelers and expenses and start over?')) return;
-      state = {name:'New trip', currency:state.currency, rates:state.rates, view:state.view, settleMode:state.settleMode, people:[], expenses:[]};
+      state = {name:'New trip', currency:state.currency, rates:state.rates, view:state.view, people:[], expenses:[]};
       editingId=null; form=blankForm(); openRows.clear(); persist(); render();
     }
     else if(act==='share') shareSummary();
-    else if(act==='smode'){ state.settleMode = t.dataset.m; persist(); render(); }
     else if(act==='xlsx') exportXlsx();
     else if(act==='tsv') copyForSheets();
     else if(act==='backup') backup();
@@ -610,19 +607,14 @@ label.f .amt-row input{flex:1 1 auto;width:auto;min-width:0}
   const fileBase = () => (state.name||'trip').replace(/[^\w]+/g,'-').replace(/^-|-$/g,'') || 'trip';
 
   function summaryText(){
-    const {per, transfers} = compute();
+    const {per} = compute();
     const total = state.expenses.reduce((n,e)=>n+baseCents(e),0);
     let t = state.name+'\n'+fmt(total)+' total\n\nBalances\n';
     state.people.forEach(p => { const n = per[p].net;
       t += p+': '+(n>0?'gets back '+fmt(n):n<0?'pays '+fmt(-n):'even')+'\n'; });
-    if(state.settleMode==='direct'){
-      const g = directPayments();
-      t += '\nWho pays whom, per expense\n';
-      t += g.length ? g.map(x => x.title+' (paid by '+x.payer+')\n'+x.items.map(i => '  '+i.from+' pays '+i.to+' '+fmt(i.c)).join('\n')).join('\n\n') : 'Everyone only paid their own share.';
-    } else {
-      t += '\nSettle up\n';
-      t += transfers.length ? transfers.map(x => x.from+' pays '+x.to+' '+fmt(x.v)).join('\n') : 'Everyone is even.';
-    }
+    const g = directPayments();
+    t += '\nWho pays whom, per expense\n';
+    t += g.length ? g.map(x => x.title+' (paid by '+x.payer+')\n'+x.items.map(i => '  '+i.from+' pays '+i.to+' '+fmt(i.c)).join('\n')).join('\n\n') : 'Everyone only paid their own share.';
     return t;
   }
   async function shareSummary(){
@@ -642,7 +634,7 @@ label.f .amt-row input{flex:1 1 auto;width:auto;min-width:0}
   async function copyForSheets(){
     if(!state.expenses.length){ note('Add an expense first.', 'exportMsg'); return; }
     const d = tableData(), cur = viewCode(), f = c => toNum(c).toFixed(2);
-    const lines = [['Expense','Paid by','Amount ('+cur+')', ...d.people]];
+    const lines = [['Expense','Paid by','Amount paid ('+cur+')', ...d.people]];
     d.rows.forEach(r => lines.push([r.label, r.payer, r.amount.toFixed(2), ...r.cells.map(f)]));
     lines.push(['Paid','','', ...d.people.map(p=>f(d.per[p].paid))]);
     lines.push(['Share of costs','','', ...d.people.map(p=>f(d.per[p].owe))]);
@@ -725,7 +717,7 @@ label.f .amt-row input{flex:1 1 auto;width:auto;min-width:0}
     return zipStore(files.map(([name,text]) => ({name, data: enc.encode(text)})));
   }
   function sheetsData(){
-    const d = tableData(), cur = viewCode(), {per, transfers, people, rows} = d, n = toNum;
+    const d = tableData(), cur = viewCode(), {per, people, rows} = d, n = toNum;
     const H = v => ({v, s:1}), N = v => ({v, s:2}), NB = v => ({v, s:3}), B = v => ({v, s:4});
     const tot = k => people.reduce((a,p)=>a+per[p][k],0);
     const total = state.expenses.reduce((a,e)=>a+baseCents(e),0);
@@ -739,17 +731,15 @@ label.f .amt-row input{flex:1 1 auto;width:auto;min-width:0}
     const cats = [[H('Category'), H('Amount ('+cur+')'), H('Share of trip')],
       ...Object.entries(byCat).sort((a,b)=>b[1]-a[1]).map(([c,v]) => [c, N(n(v)), {v:total?+(v/total).toFixed(4):0, s:5}]),
       [B('Total'), NB(n(total))]];
-    const matrix = [[H('Expense'), H('Paid by'), H('Amount ('+cur+')'), ...people.map(H)],
+    const matrix = [[H('Expense'), H('Paid by'), H('Amount paid ('+cur+')'), ...people.map(H)],
       ...rows.map(r => [r.label, r.payer, N(r.amount), ...r.cells.map(c=>N(n(c)))]),
       [B('Paid'),'','', ...people.map(p=>NB(n(per[p].paid)))],
       [B('Share of costs'),'','', ...people.map(p=>NB(n(per[p].owe)))],
       [B('Net (+ gets back)'),'','', ...people.map(p=>NB(n(per[p].net)))]];
-    const settle = [[H('From'), H('To'), H('Amount ('+cur+')')],
-      ...(transfers.length ? transfers.map(t => [t.from, t.to, N(n(t.v))]) : [['Everyone is even','','']])];
     const direct = [[H('Expense'), H('From'), H('To'), H('Amount ('+cur+')')]];
     directPayments().forEach(g => g.items.forEach(i => direct.push([g.title, i.from, i.to, N(n(i.c))])));
     if(direct.length===1) direct.push(['Everyone only paid their own share','','','']);
-    return [{name:'Summary', rows:summary},{name:'Expenses', rows:expenses},{name:'By category', rows:cats},{name:'Who paid for what', rows:matrix},{name:'Direct payments', rows:direct},{name:'Fewest payments', rows:settle}];
+    return [{name:'Summary', rows:summary},{name:'Expenses', rows:expenses},{name:'By category', rows:cats},{name:'Who paid for what', rows:matrix},{name:'Direct payments', rows:direct}];
   }
   function exportXlsx(){
     if(!state.expenses.length){ note('Add an expense first.', 'exportMsg'); return; }
